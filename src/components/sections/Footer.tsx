@@ -24,11 +24,17 @@ export function Footer() {
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr]">
           <div>
             <Logo href="#home" height={48} />
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone-400">Cinematic video editing for weddings, haldi, pre-wedding, bike films and social content. Turning moments into cinematic memories.</p>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-stone-400">Cinematic video editing for weddings, haldi, pre-wedding, bike films and social content. Turning moments into cinema.</p>
             <div className="mt-5 flex items-center gap-3">
-              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-300 transition-all hover:border-gold-500/40 hover:text-gold-100"><Instagram className="h-5 w-5" /></a>
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-300 transition-all hover:border-gold-500/40 hover:text-gold-100"><MessageCircle className="h-5 w-5" /></a>
-              <a href={`mailto:${EMAIL}`} aria-label="Email" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-300 transition-all hover:border-gold-500/40 hover:text-gold-100"><Mail className="h-5 w-5" /></a>
+              <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-300 transition-all hover:border-gold-500/40 hover:bg-gold-500/10 hover:text-gold-100">
+                <Instagram className="h-4 w-4" />
+              </a>
+              <a href={whatsappHref} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-300 transition-all hover:border-green-500/40 hover:bg-green-500/10 hover:text-green-100">
+                <MessageCircle className="h-4 w-4" />
+              </a>
+              <a href={`mailto:${EMAIL}`} aria-label="Email" className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-300 transition-all hover:border-gold-500/40 hover:bg-gold-500/10 hover:text-gold-100">
+                <Mail className="h-4 w-4" />
+              </a>
             </div>
           </div>
 
