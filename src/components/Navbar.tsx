@@ -28,7 +28,7 @@ export function Navbar() {
   return (
     <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-cinematic ${scrolled ? 'border-b border-white/[0.06] bg-ink-950/85 backdrop-blur-2xl' : 'bg-transparent'}`}>
       <nav className="container-mx flex h-16 items-center justify-between sm:h-[4.5rem]">
-        <Logo href="#home" height={42} />
+        <Logo href="#home" height={45} />
 
         {/* Desktop */}
         <ul className="hidden items-center gap-0.5 lg:flex">
@@ -43,7 +43,7 @@ export function Navbar() {
         </ul>
 
         <div className="flex items-center gap-3">
-          <a href="#contact" className="hidden rounded-full bg-gold-gradient px-6 py-2.5 text-sm font-semibold text-ink-950 shadow-gold transition-all hover:shadow-gold-glow hover:scale-[1.04] active:scale-95 sm:inline-flex">
+          <a href="#contact" className="hidden rounded-full bg-gold-gradient px-6 py-2.5 text-sm font-semibold text-ink-950 shadow-gold transition-all hover:shadow-gold-glow hover:scale-[1.04] lg:inline-block">
             Get Free Quote
           </a>
           <button type="button" onClick={() => setOpen((v) => !v)} aria-label={open ? 'Close menu' : 'Open menu'} aria-expanded={open}
