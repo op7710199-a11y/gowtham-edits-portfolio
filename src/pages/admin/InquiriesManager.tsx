@@ -130,7 +130,7 @@ export function InquiriesManager() {
             { key: 'project_type', label: 'Project', render: (r) => <span className="text-xs text-stone-300">{r.project_type ?? r.service ?? '—'}</span> },
             { key: 'budget_range', label: 'Budget', render: (r) => <span className="text-xs text-gold-300">{r.budget_range ?? '—'}</span> },
             { key: 'status', label: 'Status', render: (r) => <InquiryStatusBadge status={r.status} /> },
-            { key: 'created_at', label: 'Received', sortable: true, render: (r) => <span className="text-xs text-stone-400">{new Date(r.created_at).toLocaleDateString()</span> },
+            { key: 'created_at', label: 'Received', sortable: true, render: (r) => <span className="text-xs text-stone-400">{new Date(r.created_at).toLocaleDateString()}</span> },
           ]}
         />
       </div>
