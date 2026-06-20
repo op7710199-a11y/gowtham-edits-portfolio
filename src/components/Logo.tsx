@@ -1,8 +1,6 @@
 /*
   Logo component — renders the official GOWTHAM EDITS brand logo.
-  The logo is the brush-script wordmark: "Gowtham" in white, "edits" in gold,
-  on a black background. We embed it as an <img> pointing to /logo.png.
-  A pure-CSS fallback text version is available via the `text` prop.
+  Uses the uploaded logo image with responsive sizing for all sections.
 */
 
 interface LogoProps {
@@ -36,24 +34,26 @@ function ImageLogo({ height, compact }: { height: number; compact: boolean }) {
   if (compact) {
     return (
       <img
-        src="/logo.svg"
-        alt="GOWTHAM EDITS logo"
+        src="/logo.png"
+        alt="Gowtham Edits Logo"
         width={height}
         height={height}
         className="rounded-xl object-contain"
         style={{ height, width: height }}
         draggable={false}
+        loading="eager"
       />
     );
   }
   return (
     <img
-      src="/logo.svg"
-      alt="GOWTHAM EDITS"
+      src="/logo.png"
+      alt="Gowtham Edits Logo"
       height={height}
       style={{ height, width: 'auto' }}
       className="object-contain"
       draggable={false}
+      loading="eager"
     />
   );
 }
