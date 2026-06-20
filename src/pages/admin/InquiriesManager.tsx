@@ -68,17 +68,19 @@ export function InquiriesManager() {
   // CSV export
   const exportCSV = () => {
     const headers = ['Name', 'Email', 'Phone', 'WhatsApp', 'Project Type', 'Budget', 'Deadline', 'Message', 'Status', 'Received'];
-    const csvRows = filtered.map((r) => [
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = filtered.map((r) => [
       r.name, r.email, r.phone ?? '', r.whatsapp ?? '',
       r.project_type ?? r.service ?? '', r.budget_range ?? '',
-      r.delivery_deadline ?? '', `"${(r.message ?? '').replace(/"/g, '""')}",
+      r.delivery_deadline ?? '', r.message ?? '',
       r.status, new Date(r.created_at).toLocaleDateString(),
-    ].join(','));
-    const blob = new Blob([[headers.join(','), ...csvRows].join('\n')], { type: 'text/csv' });
+    ].map(escape).join(','));
+    const csv = [headers.map(escape).join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `inquiries-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = 'inquiries-' + new Date().toISOString().slice(0, 10) + '.csv';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -128,7 +130,7 @@ export function InquiriesManager() {
             { key: 'project_type', label: 'Project', render: (r) => <span className="text-xs text-stone-300">{r.project_type ?? r.service ?? '—'}</span> },
             { key: 'budget_range', label: 'Budget', render: (r) => <span className="text-xs text-gold-300">{r.budget_range ?? '—'}</span> },
             { key: 'status', label: 'Status', render: (r) => <InquiryStatusBadge status={r.status} /> },
-            { key: 'created_at', label: 'Received', sortable: true, render: (r) => <span className="text-xs text-stone-400">{new Date(r.created_at).toLocaleDateString()}</span> },
+            { key: 'created_at', label: 'Received', sortable: true, render: (r) => <span className="text-xs text-stone-400">{new Date(r.created_at).toLocaleDateString()</span> },
           ]}
         />
       </div>
