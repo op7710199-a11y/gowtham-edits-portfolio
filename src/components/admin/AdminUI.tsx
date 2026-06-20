@@ -34,7 +34,7 @@ export function Modal({ open, onClose, title, children, maxWidth = 'max-w-2xl' }
         onClick={onClose}
       />
       <div
-        className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-ink-900 shadow-gold animate-scale-in"
+        className={`relative z-10 w-full ${maxWidth} max-h-[90vh] overflow-y-auto rounded-2xl border border-white/[0.08] bg-ink-900 shadow-gold animate-scale-in`}
       >
         <div className="sticky top-0 flex items-center justify-between border-b border-white/[0.06] bg-ink-900 px-6 py-4">
           <h2 className="font-display text-lg font-bold text-white">{title}</h2>
