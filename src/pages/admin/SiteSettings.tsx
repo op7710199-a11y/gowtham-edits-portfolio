@@ -6,7 +6,13 @@ import { Save, RefreshCw } from 'lucide-react';
 import { useActivityLog } from '../../hooks/data';
 import type { SiteSetting } from '../../types/database';
 
-const CATEGORIES = ['branding', 'social', 'contact', 'stats'];
+const CATEGORIES = [
+  { key: 'branding', label: 'Brand' },
+  { key: 'contact', label: 'Contact' },
+  { key: 'social', label: 'Social Media' },
+  { key: 'seo', label: 'SEO' },
+  { key: 'stats', label: 'Stats' },
+];
 
 export function SiteSettingsPage() {
   const [settings, setSettings] = useState<SiteSetting[]>([]);
@@ -39,12 +45,10 @@ export function SiteSettingsPage() {
         const setting = settings.find((s) => s.key === key);
         if (!setting) continue;
         let value: unknown;
-        try {
-          const orig = setting.value;
-          if (typeof orig === 'number') value = Number(rawVal);
-          else if (typeof orig === 'boolean') value = rawVal === 'true';
-          else value = rawVal;
-        } catch { value = rawVal; }
+        const orig = setting.value;
+        if (typeof orig === 'number') value = Number(rawVal);
+        else if (typeof orig === 'boolean') value = rawVal === 'true';
+        else value = rawVal;
         await supabase.from('site_settings').update({ value: value as never, updated_at: new Date().toISOString() }).eq('key', key);
       }
       await log('update', 'site_settings', undefined, { keys: Object.keys(edited) });
@@ -57,28 +61,44 @@ export function SiteSettingsPage() {
   };
 
   const grouped = CATEGORIES.map((cat) => ({
-    cat,
-    items: settings.filter((s) => s.category === cat),
+    ...cat,
+    items: settings.filter((s) => s.category === cat.key),
   }));
+
+  const hasChanges = Object.keys(edited).length > 0;
 
   return (
     <div>
-      <PageHeader title="Site Settings" subtitle="Manage brand details, contact info, and stats used across the website."
-        action={<button type="button" onClick={saveAll} disabled={saving || Object.keys(edited).length === 0} className="btn-primary py-2.5 disabled:opacity-50">{saving ? <><RefreshCw className="h-4 w-4 animate-spin" /> Saving…</> : <><Save className="h-4 w-4" /> Save Changes</>}</button>}
+      <PageHeader title="Site Settings" subtitle="Brand, contact info, social links, SEO, and statistics — all in one place."
+        action={
+          <button type="button" onClick={saveAll} disabled={saving || !hasChanges} className="btn-primary py-2.5 disabled:opacity-50">
+            {saving ? <><RefreshCw className="h-4 w-4 animate-spin" /> Saving…</> : <><Save className="h-4 w-4" /> Save Changes</>}
+          </button>
+        }
       />
       <div className="p-6 space-y-8">
         {saved && <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">Settings saved successfully.</div>}
         {error && <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
+        {hasChanges && (
+          <div className="rounded-xl border border-gold-500/30 bg-gold-500/[0.05] px-4 py-3 text-sm text-gold-200">
+            {Object.keys(edited).length} unsaved change{Object.keys(edited).length > 1 ? 's' : ''}. Remember to save.
+          </div>
+        )}
 
         {loading ? (
-          <div className="space-y-3">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-14 animate-pulse rounded-xl bg-white/[0.04]" />)}</div>
+          <div className="space-y-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-14 animate-pulse rounded-xl bg-white/[0.04]" />)}</div>
         ) : (
-          grouped.map(({ cat, items }) => items.length === 0 ? null : (
-            <div key={cat}>
-              <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.25em] text-gold-400">{cat}</h2>
+          grouped.map(({ key: catKey, label, items }) => items.length === 0 ? null : (
+            <div key={catKey}>
+              <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.25em] text-gold-400">{label}</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {items.map((s) => (
-                  <Field key={s.key} label={s.label ?? s.key} value={getValue(s)} onChange={(v) => setEdited((e) => ({ ...e, [s.key]: v }))} />
+                  <Field
+                    key={s.key}
+                    label={s.label ?? s.key}
+                    value={getValue(s)}
+                    onChange={(v) => setEdited((e) => ({ ...e, [s.key]: v }))}
+                  />
                 ))}
               </div>
             </div>

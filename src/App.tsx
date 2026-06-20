@@ -13,8 +13,10 @@ import { UsersManager } from './pages/admin/UsersManager';
 import { ActivityLogs } from './pages/admin/ActivityLogs';
 import { SiteSettingsPage } from './pages/admin/SiteSettings';
 import { FaqsManager } from './pages/admin/FaqsManager';
+import { StatsManager } from './pages/admin/StatsManager';
+import { HeroSettingsPage } from './pages/admin/HeroSettings';
 
-// Public site — existing section components
+// Public site components
 import { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { FloatingWhatsApp, MobileCTABar, BackToTop } from './components/FloatingActions';
@@ -33,6 +35,7 @@ import { FAQ } from './components/sections/FAQ';
 import { Contact } from './components/sections/Contact';
 import { Footer } from './components/sections/Footer';
 import { LoadingScreen } from './components/LoadingScreen';
+import { AITools } from './components/sections/AITools';
 import { usePublicData } from './hooks/data';
 
 function PublicSite() {
@@ -45,11 +48,7 @@ function PublicSite() {
     <div className="relative min-h-screen bg-ink-950 text-stone-200">
       <Navbar />
       <main>
-        <Hero stats={[
-          { value: 240, label: 'Projects Completed', suffix: '+' },
-          { value: 180, label: 'Happy Clients', suffix: '+' },
-          { value: 1200, label: 'Content Delivered', suffix: '+' },
-        ]} />
+        <Hero />
         <ServicesPreview services={publicData.services} />
         <FeaturedProjects portfolio={publicData.portfolio} onOpenProject={setActiveProjectId} />
         <WhyChoose />
@@ -62,15 +61,12 @@ function PublicSite() {
         <Services services={publicData.services} />
         <Pricing pricing={publicData.pricing} />
         <ProcessSection />
+        <AITools />
         <InquiryCTA
           heading="Your project deserves a cinematic edit."
           subtext="Whether it's a wedding film, a viral reel, or a bike cinematic — let's build something that lasts."
         />
         <TestimonialsSection testimonials={publicData.testimonials} />
-        <InquiryCTA
-          heading="Ready to turn your moments into cinema?"
-          subtext="Join 180+ happy clients who turned raw footage into films they replay forever."
-        />
         <FAQ faqs={publicData.faqs} />
         <Contact />
       </main>
@@ -87,10 +83,8 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Admin login — public */}
           <Route path="/admin/login" element={<Login />} />
 
-          {/* Admin — protected */}
           <Route
             path="/admin"
             element={
@@ -101,6 +95,8 @@ export default function App() {
           >
             <Route index element={<Dashboard />} />
             <Route path="portfolio" element={<PortfolioManager />} />
+            <Route path="hero" element={<ProtectedRoute roles={['super_admin', 'admin']}><HeroSettingsPage /></ProtectedRoute>} />
+            <Route path="stats" element={<ProtectedRoute roles={['super_admin', 'admin']}><StatsManager /></ProtectedRoute>} />
             <Route path="services" element={<ProtectedRoute roles={['super_admin', 'admin']}><ServicesManager /></ProtectedRoute>} />
             <Route path="pricing" element={<ProtectedRoute roles={['super_admin', 'admin']}><PricingManager /></ProtectedRoute>} />
             <Route path="testimonials" element={<ProtectedRoute roles={['super_admin', 'admin']}><TestimonialsManager /></ProtectedRoute>} />
@@ -112,7 +108,6 @@ export default function App() {
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Route>
 
-          {/* Public site */}
           <Route path="/*" element={<PublicSite />} />
         </Routes>
       </AuthProvider>
