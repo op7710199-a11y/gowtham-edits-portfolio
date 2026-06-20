@@ -68,7 +68,7 @@ export function Hero() {
 
       {/* ── Film-grain overlay ── */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.025]"
-        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")',
+        style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\' /%3E%3C/filter%3E%3Crect width=\'256\' height=\'256\' fill=\'%23fff\' filter=\'url(%23noise)\' opacity=\'0.05\'/%3E%3C/svg%3E")',
           backgroundSize: '200px 200px' }} />
 
       <div className="container-mx flex min-h-[100svh] flex-col justify-center pb-16 pt-28">
@@ -76,7 +76,7 @@ export function Hero() {
           {/* Logo reveal */}
           <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ transitionDelay: '0ms' }}>
-            <Logo height={56} />
+            <Logo height={64} />
           </div>
 
           {/* Eyebrow */}
@@ -91,7 +91,7 @@ export function Hero() {
 
           {/* Headline */}
           <h1
-            className={`mt-6 font-display text-5xl font-bold leading-[0.92] tracking-tight text-white transition-all duration-1000 ease-cinematic sm:text-6xl lg:text-7xl xl:text-8xl ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+            className={`mt-6 font-display text-5xl font-bold leading-[0.92] tracking-tight text-white transition-all duration-1000 ease-cinematic sm:text-6xl lg:text-7xl xl:text-8xl ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ transitionDelay: '300ms', textShadow: '0 4px 40px rgba(0,0,0,0.7)' }}
           >
             {hero.headline.split(' ').map((word, i) => (
@@ -123,7 +123,7 @@ export function Hero() {
               href={`https://wa.me/${whatsappNum}?text=Hi, I'd like to discuss a video editing project.`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/10 px-6 py-4 text-sm font-semibold text-green-300 transition-all hover:border-green-400 hover:bg-green-500/20 hover:scale-[1.03] active:scale-95"
+              className="inline-flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/10 px-6 py-4 text-sm font-semibold text-green-300 transition-all hover:border-green-400/60 hover:bg-green-500/20"
             >
               <MessageCircle className="h-4 w-4" />
               {hero.cta_whatsapp}
