@@ -40,11 +40,19 @@ export function useAboutSettings() {
     let active = true;
     (async () => {
       try {
-        const { data } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
+        const { data, error } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
         if (!active) return;
-        if (data) setAbout(data as AboutSettings);
+        if (error) return;
+        if (data) {
+          const parsed = data as AboutSettings & { skills?: unknown };
+          setAbout({
+            ...DEFAULT_ABOUT,
+            ...parsed,
+            skills: Array.isArray(parsed.skills) ? (parsed.skills as string[]) : DEFAULT_ABOUT.skills,
+          });
+        }
       } catch {
-        // use defaults
+        // keep defaults — placeholder content shows instead of empty space
       } finally {
         if (active) setLoading(false);
       }
@@ -68,8 +76,9 @@ export function useAboutAdmin() {
     let active = true;
     (async () => {
       try {
-        const { data } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
+        const { data, error } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
         if (!active) return;
+        if (error) return;
         if (data) {
           const parsed = data as AboutSettings & { skills?: unknown };
           setForm({
