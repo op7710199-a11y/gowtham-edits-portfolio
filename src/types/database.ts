@@ -121,4 +121,19 @@ export interface ActivityLog {
   profile?: Pick<Profile, 'full_name' | 'email'>;
 }
 
+export interface AboutSettings {
+  id: string;
+  profile_image_url: string;
+  name: string;
+  title: string;
+  bio: string;
+  skills: string[];
+  quote: string;
+  quote_author: string;
+  instagram_url: string;
+  cta_text: string;
+  is_published: boolean;
+  updated_at: string;
+}
+
 export type InquiryStatus = 'new' | 'contacted' | 'converted' | 'closed';

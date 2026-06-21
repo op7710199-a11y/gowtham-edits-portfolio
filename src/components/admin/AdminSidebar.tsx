@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Images, Briefcase, DollarSign, Star,
   MessageSquare, Users, Settings, Search, Activity,
   ChevronLeft, ChevronRight, LogOut, ExternalLink,
-  BarChart2, Tv2,
+  BarChart2, Tv2, User,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Logo } from '../Logo';
@@ -30,6 +30,7 @@ const NAV_GROUPS = [
     label: 'Hero & Brand',
     items: [
       { path: '/admin/hero', icon: Tv2, label: 'Hero Settings', roles: ['super_admin', 'admin'] },
+      { path: '/admin/about', icon: User, label: 'About Manager', roles: ['super_admin', 'admin'] },
       { path: '/admin/stats', icon: BarChart2, label: 'Statistics', roles: ['super_admin', 'admin'] },
     ],
   },

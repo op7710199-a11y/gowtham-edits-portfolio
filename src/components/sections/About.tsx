@@ -1,143 +1,157 @@
-import { CheckCircle2, Clapperboard, Camera, Palette, Sparkles, Users, Clock, Award } from 'lucide-react';
-import { Reveal, RevealScope, SectionHeading } from '../Reveal';
-import { TOOLS } from '../../data/content';
+import { Quote, Instagram, ArrowRight } from 'lucide-react';
+import { Reveal, SectionHeading } from '../Reveal';
+import { useAboutSettings } from '../../hooks/useAboutSettings';
+import { supabase } from '../../lib/supabase';
+import { useEffect, useState } from 'react';
 
-const STYLE_PILLARS = [
-  { icon: Camera, title: 'Story-first editing', description: 'Every cut serves emotion. Before a beat drop or speed ramp, the story has to earn it.' },
-  { icon: Palette, title: 'Signature color mood', description: 'Warm skin tones, deep shadows, golden highlights — a look that feels timeless and luxurious.' },
-  { icon: Sparkles, title: 'Sound-driven rhythm', description: 'Sound design and music come first. Pacing follows the audio, not the other way around.' },
-];
-
-const EXPERIENCE = [
-  { year: '2019', title: 'Started editing', detail: 'Began cutting wedding films & social reels for local creators.' },
-  { year: '2021', title: 'Cinematic pivot', detail: 'Moved to film-grade color grading & motion graphic stings.' },
-  { year: '2023', title: 'Bike cinematic series', detail: 'Launched a viral bike cinematic series online.' },
-  { year: 'Today', title: '240+ projects shipped', detail: 'Editing for clients across India and worldwide.' },
-];
-
-const REASONS = [
-  'Single editor — no agency handoffs',
-  'Consistent style across every project',
-  'Clear delivery dates, no surprises',
-  'Reels, films & cinematics — one studio',
-];
+const PLACEHOLDER_SVG = `data:image/svg+xml,${encodeURIComponent(`
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="400" fill="#1a1814"/>
+  <circle cx="200" cy="200" r="120" fill="#2a2620"/>
+  <circle cx="200" cy="170" r="50" fill="#3a342a"/>
+  <ellipse cx="200" cy="290" rx="80" ry="55" fill="#3a342a"/>
+  <text x="200" y="355" font-family="system-ui" font-size="14" fill="#7a6840" text-anchor="middle" letter-spacing="2">PROFILE</text>
+</svg>
+`)}`;
 
 export function About() {
+  const { about, loading } = useAboutSettings();
+  const [publicUrl, setPublicUrl] = useState('');
+
+  useEffect(() => {
+    if (!about.profile_image_url) { setPublicUrl(PLACEHOLDER_SVG); return; }
+    if (about.profile_image_url.startsWith('http')) {
+      setPublicUrl(about.profile_image_url);
+    } else {
+      const { data } = supabase.storage.from('about-assets').getPublicUrl(about.profile_image_url);
+      setPublicUrl(data.publicUrl || PLACEHOLDER_SVG);
+    }
+  }, [about.profile_image_url]);
+
   return (
     <section id="about" className="section-padding relative overflow-hidden">
-      <div className="pointer-events-none absolute -left-20 top-1/4 -z-10 h-[40vh] w-[40vh] rounded-full bg-gold-500/10 blur-[120px]" />
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[50vh] w-[50vh] -translate-x-1/2 rounded-full bg-gold-500/[0.07] blur-[140px]" />
+      <div className="pointer-events-none absolute -right-20 top-1/3 -z-10 h-[35vh] w-[35vh] rounded-full bg-gold-600/[0.05] blur-[100px]" />
 
       <div className="container-mx">
         <SectionHeading
           eyebrow="About"
-          title={<>The editor behind <span className="text-gradient-gold">the films</span></>}
-          subtitle="Hi, I'm Gowtham — a cinematic video editor obsessed with turning raw footage into memories that feel like movies."
+          title={
+            <>
+              The editor behind <span className="text-gradient-gold">the films</span>
+            </>
+          }
+          subtitle="Get to know the person behind every cut, color, and cinematic moment."
         />
 
-        <div className="mt-14 grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+        <div className="mt-14 grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          {/* Portrait with circular glow */}
           <Reveal>
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-3xl border border-white/10">
-                <img
-                  src="https://images.pexels.com/photos/3785084/pexels-photo-3785084.jpeg?auto=compress&cs=tinysrgb&w=900&h=1100&fit=crop"
-                  alt="Gowtham — video editor at work"
-                  loading="lazy"
-                  className="aspect-[4/5] w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 p-6">
-                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-gold-gradient text-ink-950">
-                    <Clapperboard className="h-6 w-6" strokeWidth={2} />
-                  </span>
-                  <div>
-                    <div className="font-display text-lg font-bold text-white">Gowtham</div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-gold-300">Lead Editor</div>
+            <div className="relative mx-auto w-full max-w-sm">
+              {/* Rotating gold ring */}
+              <div className="pointer-events-none absolute inset-0 -m-4 animate-spin-slow rounded-full border border-dashed border-gold-500/20" style={{ animationDuration: '30s' }} />
+              {/* Outer glow */}
+              <div className="pointer-events-none absolute inset-0 -m-2 rounded-full bg-gradient-to-b from-gold-500/20 via-gold-600/10 to-transparent blur-2xl" />
+
+              <div className="relative aspect-square w-full overflow-hidden rounded-full border-2 border-gold-500/30 bg-ink-900 ring-4 ring-gold-500/5">
+                {loading ? (
+                  <div className="h-full w-full animate-pulse bg-ink-800" />
+                ) : (
+                  <img
+                    src={publicUrl}
+                    alt={about.name || 'Profile'}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_SVG; }}
+                  />
+                )}
+                {/* Inner gradient overlay for cinematic depth */}
+                <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Name plate */}
+              {about.name && (
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full">
+                  <div className="rounded-2xl border border-gold-500/25 bg-ink-950/90 px-6 py-2.5 text-center backdrop-blur-md">
+                    <div className="font-display text-base font-bold text-white">{about.name}</div>
+                    {about.title && <div className="text-[10px] uppercase tracking-[0.25em] text-gold-300">{about.title}</div>}
                   </div>
                 </div>
-              </div>
-              <div className="absolute -right-4 -top-4 hidden rotate-3 rounded-2xl border border-gold-500/30 bg-ink-900/80 px-5 py-4 backdrop-blur-md sm:block">
-                <div className="font-display text-2xl font-bold text-gradient-gold">5+</div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-stone-400">Years editing</div>
-              </div>
+              )}
+
+              {/* Instagram badge */}
+              {about.instagram_url && (
+                <a
+                  href={about.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute right-2 top-2 grid h-10 w-10 place-items-center rounded-full border border-gold-500/30 bg-ink-950/80 text-gold-300 backdrop-blur-md transition-all hover:scale-110 hover:bg-gold-500 hover:text-ink-950"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="h-4 w-4" />
+                </a>
+              )}
             </div>
           </Reveal>
 
+          {/* Right column */}
           <div>
             <Reveal>
               <p className="text-base leading-relaxed text-stone-300 sm:text-lg">
-                I'm a cinematic video editor specializing in weddings, haldi celebrations, pre-wedding
-                stories, bike cinematic cuts, and high-retention reels &amp; social content. My approach
-                is simple: story first, rhythm second, polish always. The result is films that feel
-                less like highlight reels and more like a memory you'd want to replay forever.
+                {about.bio}
               </p>
             </Reveal>
 
-            <RevealScope className="mt-8 grid gap-4 sm:grid-cols-3">
-              {STYLE_PILLARS.map((p, i) => (
-                <Reveal key={p.title} delay={i * 90}>
-                  <div className="card-glass h-full p-5 hover:border-gold-500/30 hover:bg-white/[0.06]">
-                    <p.icon className="h-7 w-7 text-gold-300" />
-                    <h3 className="mt-3 font-display text-base font-semibold text-white">{p.title}</h3>
-                    <p className="mt-1.5 text-sm leading-relaxed text-stone-400">{p.description}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </RevealScope>
+            {/* Skills */}
+            {about.skills.length > 0 && (
+              <Reveal className="mt-8">
+                <h3 className="font-display text-lg font-semibold text-white">Tools &amp; Expertise</h3>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {about.skills.map((s, i) => (
+                    <span
+                      key={s}
+                      className="rounded-full border border-gold-500/20 bg-gold-500/[0.05] px-3.5 py-1.5 text-xs font-medium text-gold-100 transition-all hover:border-gold-500/40 hover:bg-gold-500/[0.1]"
+                      style={{ animationDelay: `${i * 50}ms` }}
+                    >
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </Reveal>
+            )}
 
-            <Reveal className="mt-8">
-              <h3 className="font-display text-lg font-semibold text-white">Why clients choose me</h3>
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {REASONS.map((r) => (
-                  <li key={r} className="flex items-start gap-2.5 text-sm text-stone-300">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
-                    <span>{r}</span>
-                  </li>
-                ))}
-              </ul>
-            </Reveal>
+            {/* Quote */}
+            {about.quote && (
+              <Reveal className="mt-8">
+                <div className="relative overflow-hidden rounded-2xl border border-gold-500/15 bg-gradient-to-br from-ink-900/60 to-ink-950/40 p-6">
+                  <Quote className="absolute -right-2 -top-2 h-16 w-16 text-gold-500/10" />
+                  <blockquote className="relative font-display text-base italic text-stone-200 sm:text-lg">
+                    "{about.quote}"
+                  </blockquote>
+                  {about.quote_author && (
+                    <cite className="mt-3 block text-xs font-semibold uppercase tracking-[0.25em] text-gold-300">
+                      — {about.quote_author}
+                    </cite>
+                  )}
+                </div>
+              </Reveal>
+            )}
 
-            <Reveal className="mt-8">
-              <h3 className="font-display text-lg font-semibold text-white">Tools &amp; software</h3>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {TOOLS.map((t) => (
-                  <span key={t} className="rounded-full border border-gold-500/20 bg-gold-500/[0.05] px-3.5 py-1.5 text-xs font-medium text-gold-100">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </Reveal>
+            {/* CTA */}
+            {about.cta_text && (
+              <Reveal className="mt-8">
+                <a
+                  href="#contact"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 text-sm font-semibold text-ink-950 transition-all hover:shadow-[0_0_30px_rgba(198,146,33,0.4)]"
+                >
+                  {about.cta_text}
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </a>
+              </Reveal>
+            )}
           </div>
         </div>
-
-        <Reveal className="mt-16">
-          <div className="glass rounded-2xl p-7 sm:p-9">
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-gold-300" />
-              <h3 className="font-display text-xl font-bold text-white">Experience</h3>
-            </div>
-            <RevealScope className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {EXPERIENCE.map((e, i) => (
-                <Reveal key={e.year} delay={i * 100}>
-                  <div className="relative pl-5">
-                    <span className="absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full bg-gold-gradient ring-4 ring-gold-500/15" />
-                    {i < EXPERIENCE.length - 1 && (
-                      <span className="absolute left-[4px] top-5 hidden h-[calc(100%+1.5rem)] w-px bg-gradient-to-b from-gold-500/40 to-transparent lg:block" />
-                    )}
-                    <div className="text-xs font-semibold uppercase tracking-[0.2em] text-gold-300">{e.year}</div>
-                    <h4 className="mt-1.5 font-display text-base font-semibold text-white">{e.title}</h4>
-                    <p className="mt-1 text-sm leading-relaxed text-stone-400">{e.detail}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </RevealScope>
-          </div>
-        </Reveal>
-
-        <Reveal className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-stone-400">
-          <span className="flex items-center gap-2"><Users className="h-4 w-4 text-gold-400" /> 180+ clients served</span>
-          <span className="h-3 w-px bg-white/10" />
-          <span className="flex items-center gap-2"><Award className="h-4 w-4 text-gold-400" /> 5.0 average rating</span>
-        </Reveal>
       </div>
     </section>
   );
