@@ -28,43 +28,47 @@ export function Dashboard() {
   useEffect(() => {
     let active = true;
     (async () => {
-      try {
-        const [port, inq, test, svc, acts, newInq, converted, inProgress] = await Promise.all([
-          supabase.from('portfolio_items').select('id', { count: 'exact', head: true }),
-          supabase.from('inquiries').select('id, name, email, service, project_type, status, budget_range, created_at').order('created_at', { ascending: false }).limit(6),
-          supabase.from('testimonials').select('id', { count: 'exact', head: true }),
-          supabase.from('services').select('id', { count: 'exact', head: true }),
-          supabase.from('activity_logs').select('*, profile:profiles(full_name, email)').order('created_at', { ascending: false }).limit(10),
-          supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'new'),
-          supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'converted'),
-          supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
-        ]);
-        if (!active) return;
+      const results = await Promise.allSettled([
+        supabase.from('portfolio_items').select('id', { count: 'exact', head: true }),
+        supabase.from('inquiries').select('id, name, email, service, project_type, status, budget_range, created_at').order('created_at', { ascending: false }).limit(6),
+        supabase.from('testimonials').select('id', { count: 'exact', head: true }),
+        supabase.from('services').select('id', { count: 'exact', head: true }),
+        supabase.from('activity_logs').select('*, profile:profiles(full_name, email)').order('created_at', { ascending: false }).limit(10),
+        supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'new'),
+        supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'converted'),
+        supabase.from('inquiries').select('id', { count: 'exact', head: true }).eq('status', 'in_progress'),
+      ]);
+      if (!active) return;
 
-        
+      const val = <T,>(r: PromiseSettledResult<unknown>, fallback: T): T =>
+        r.status === 'fulfilled' ? (r.value as T) : fallback;
+      const port = val<{ count?: number }>(results[0], { count: 0 });
+      const inq = val<{ data?: unknown[] }>(results[1], { data: [] });
+      const test = val<{ count?: number }>(results[2], { count: 0 });
+      const svc = val<{ count?: number }>(results[3], { count: 0 });
+      const acts = val<{ data?: unknown[] }>(results[4], { data: [] });
+      const newInq = val<{ count?: number }>(results[5], { count: 0 });
+      const converted = val<{ count?: number }>(results[6], { count: 0 });
+      const inProgress = val<{ count?: number }>(results[7], { count: 0 });
 
-        setStats({
-          portfolio: port.count ?? 0,
-          totalInquiries: inq.data?.length ?? 0,
-          newInquiries: newInq.count ?? 0,
-          testimonials: test.count ?? 0,
-          services: svc.count ?? 0,
-          convertedInquiries: converted.count ?? 0,
-          inProgressInquiries: inProgress.count ?? 0,
-        });
-        setRecentInquiries((inq.data ?? []) as unknown as Inquiry[]);
-        setRecentActivity((acts.data ?? []) as ActivityLog[]);
+      setStats({
+        portfolio: port.count ?? 0,
+        totalInquiries: inq.data?.length ?? 0,
+        newInquiries: newInq.count ?? 0,
+        testimonials: test.count ?? 0,
+        services: svc.count ?? 0,
+        convertedInquiries: converted.count ?? 0,
+        inProgressInquiries: inProgress.count ?? 0,
+      });
+      setRecentInquiries((inq.data ?? []) as unknown as Inquiry[]);
+      setRecentActivity((acts.data ?? []) as unknown as ActivityLog[]);
 
-        // Build funnel
-        
-        setFunnel([
-          { label: 'New', count: newInq.count ?? 0, color: 'bg-blue-500' },
-          { label: 'In Progress', count: inProgress.count ?? 0, color: 'bg-yellow-500' },
-          { label: 'Converted', count: converted.count ?? 0, color: 'bg-green-500' },
-        ]);
-      } finally {
-        if (active) setLoading(false);
-      }
+      setFunnel([
+        { label: 'New', count: newInq.count ?? 0, color: 'bg-blue-500' },
+        { label: 'In Progress', count: inProgress.count ?? 0, color: 'bg-yellow-500' },
+        { label: 'Converted', count: converted.count ?? 0, color: 'bg-green-500' },
+      ]);
+      setLoading(false);
     })();
     return () => { active = false; };
   }, []);

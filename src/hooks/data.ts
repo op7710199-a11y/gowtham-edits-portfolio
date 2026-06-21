@@ -27,61 +27,55 @@ export interface PublicData {
 
 export function usePublicData(): PublicData {
   const [data, setData] = useState<Omit<PublicData, 'loading' | 'error'>>({
-    services: [],
-    pricing: [],
-    portfolio: [],
-    testimonials: [],
-    faqs: [],
+    services: SEED_SERVICES as unknown as Service[],
+    pricing: SEED_PRICING as unknown as PricingTier[],
+    portfolio: SEED_PROJECTS as unknown as PortfolioItem[],
+    testimonials: SEED_TESTIMONIALS as unknown as Testimonial[],
+    faqs: SEED_FAQS as unknown as FaqItem[],
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     (async () => {
-      try {
-        const [svc, prc, port, test, faq] = await Promise.all([
-          supabase.from('services').select('*').eq('is_published', true).order('display_order'),
-          supabase.from('pricing_tiers').select('*').eq('is_published', true).order('display_order'),
-          supabase.from('portfolio_items').select('*').eq('is_published', true).order('display_order'),
-          supabase.from('testimonials').select('*').eq('is_published', true).order('display_order'),
-          supabase.from('faqs').select('*').eq('is_published', true).order('display_order'),
-        ]);
-
-        if (!active) return;
-
-        if (svc.error || prc.error || port.error || test.error || faq.error) {
-          throw new Error(
-            svc.error?.message ||
-              prc.error?.message ||
-              port.error?.message ||
-              test.error?.message ||
-              faq.error?.message ||
-              'Failed to load content'
-          );
+      const safe = async <T,>(p: PromiseLike<{ data: T[] | null; error: { message: string } | null }>, fallback: T[]): Promise<T[]> => {
+        try {
+          const { data, error } = await p;
+          if (error) return fallback;
+          return (data ?? fallback) as T[];
+        } catch {
+          return fallback;
         }
+      };
 
-        setData({
-          services: (svc.data ?? []) as Service[],
-          pricing: (prc.data ?? []) as PricingTier[],
-          portfolio: (port.data ?? []) as PortfolioItem[],
-          testimonials: (test.data ?? []) as Testimonial[],
-          faqs: (faq.data ?? []) as FaqItem[],
-        });
-      } catch (e) {
-        if (!active) return;
-        console.warn('Supabase content load failed, using seed data:', e);
-        setError(null);
-        setData({
-          services: SEED_SERVICES as unknown as Service[],
-          pricing: SEED_PRICING as unknown as PricingTier[],
-          portfolio: SEED_PROJECTS as unknown as PortfolioItem[],
-          testimonials: SEED_TESTIMONIALS as unknown as Testimonial[],
-          faqs: SEED_FAQS as unknown as FaqItem[],
-        });
-      } finally {
-        if (active) setLoading(false);
-      }
+      const [services, pricing, portfolio, testimonials, faqs] = await Promise.all([
+        safe(
+          supabase.from('services').select('*').eq('is_published', true).order('display_order'),
+          SEED_SERVICES as unknown as Service[]
+        ),
+        safe(
+          supabase.from('pricing_tiers').select('*').eq('is_published', true).order('display_order'),
+          SEED_PRICING as unknown as PricingTier[]
+        ),
+        safe(
+          supabase.from('portfolio_items').select('*').eq('is_published', true).order('display_order'),
+          SEED_PROJECTS as unknown as PortfolioItem[]
+        ),
+        safe(
+          supabase.from('testimonials').select('*').eq('is_published', true).order('display_order'),
+          SEED_TESTIMONIALS as unknown as Testimonial[]
+        ),
+        safe(
+          supabase.from('faqs').select('*').eq('is_published', true).order('display_order'),
+          SEED_FAQS as unknown as FaqItem[]
+        ),
+      ]);
+
+      if (!active) return;
+
+      setData({ services, pricing, portfolio, testimonials, faqs });
+      setLoading(false);
     })();
     return () => {
       active = false;

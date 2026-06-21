@@ -44,13 +44,13 @@ export function useHeroSettings() {
     let active = true;
     (async () => {
       try {
-        const [heroRes, statsRes] = await Promise.all([
+        const [heroRes, statsRes] = await Promise.allSettled([
           supabase.from('hero_settings').select('*').limit(1).maybeSingle(),
           supabase.from('stats').select('*').eq('is_published', true).order('display_order'),
         ]);
         if (!active) return;
-        if (heroRes.data) setHero(heroRes.data as HeroSettings);
-        if (statsRes.data) setStats(statsRes.data as StatRow[]);
+        if (heroRes.status === 'fulfilled' && heroRes.value.data) setHero(heroRes.value.data as HeroSettings);
+        if (statsRes.status === 'fulfilled' && statsRes.value.data) setStats(statsRes.value.data as StatRow[]);
       } catch {
         // Use defaults
       } finally {
