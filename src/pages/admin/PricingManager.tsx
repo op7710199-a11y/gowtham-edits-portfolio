@@ -61,8 +61,14 @@ export function PricingManager() {
 
   return (
     <div>
-      <PageHeader title="Pricing" subtitle="Edit pricing packages shown on the public site."
-        action={<button type="button" onClick={openCreate} className="btn-primary py-2.5"><Plus className="h-4 w-4" /> Add Package</button>}
+      <PageHeader
+        title="Pricing"
+        subtitle="Edit pricing packages shown on the public site."
+        action={
+          <button type="button" onClick={openCreate} className="btn-primary py-2.5">
+            <Plus className="h-4 w-4" /> Add Package
+          </button>
+        }
       />
       <div className="p-6">
         <DataTable<PricingTier>
@@ -92,7 +98,7 @@ export function PricingManager() {
           <Field label="Description" value={form.description ?? ''} onChange={(v) => setForm((f) => ({ ...f, description: v }))} multiline />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium uppercase tracking-[0.15em] text-stone-400">Features (one per line)</label>
-            <textarea value={featuresText} onChange={(e) => setFeaturesText(e.target.value)} rows={5} placeholder="Full highlight film\nCinematic color grade\n5 revisions" className="w-full resize-none rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none" />
+            <textarea value={featuresText} onChange={(e) => setFeaturesText(e.target.value)} rows={5} placeholder="Full highlight film&#10;Cinematic color grade&#10;5 revisions" className="w-full resize-none rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none" />
           </div>
           <Field label="Display Order" type="number" value={String(form.display_order ?? 0)} onChange={(v) => setForm((f) => ({ ...f, display_order: parseInt(v) || 0 }))} />
           <div className="flex items-center gap-6">

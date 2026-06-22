@@ -78,9 +78,8 @@ export function useAboutAdmin() {
     let active = true;
     (async () => {
       try {
-        const { data, error } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
+        const { data } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
         if (!active) return;
-        if (error) return;
         if (data) {
           const parsed = data as AboutSettings & { skills?: unknown };
           setForm({

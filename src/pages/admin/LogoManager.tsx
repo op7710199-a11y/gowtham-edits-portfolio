@@ -80,6 +80,7 @@ export function LogoManager() {
             <AlertCircle className="h-4 w-4 shrink-0" /> {error}
           </div>
         )}
+
         <div className="card-glass p-6 space-y-4">
           <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-gold-400">Current Logo</h2>
           <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
@@ -105,6 +106,7 @@ export function LogoManager() {
             </div>
           </div>
         </div>
+
         <div className="card-glass p-6 space-y-4">
           <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-gold-400">Preview Locations</h2>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -122,6 +124,7 @@ export function LogoManager() {
             ))}
           </div>
         </div>
+
         <div className="flex justify-end">
           <a href="/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-gold-300 hover:text-gold-100 transition-colors">
             <Eye className="h-4 w-4" /> View live site
