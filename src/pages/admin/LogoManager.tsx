@@ -28,10 +28,10 @@ export function LogoManager() {
       const ext = file.name.split('.').pop() || 'png';
       const fileName = `logo-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
-        .from('about-assets')
-        .upload(`branding/${fileName}`, file, { cacheControl: '3600', upsert: true });
+        .from('logos')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true });
       if (upErr) throw upErr;
-      const { data: pub } = supabase.storage.from('about-assets').getPublicUrl(`branding/${fileName}`);
+      const { data: pub } = supabase.storage.from('logos').getPublicUrl(fileName);
       setPreviewUrl(pub.publicUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed');

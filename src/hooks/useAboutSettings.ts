@@ -107,11 +107,11 @@ export function useAboutAdmin() {
       const filePath = `profiles/${fileName}`;
 
       const { error: upErr } = await supabase.storage
-        .from('about-assets')
+        .from('profile-images')
         .upload(filePath, file, { cacheControl: '3600', upsert: true });
       if (upErr) throw upErr;
 
-      const { data: pub } = supabase.storage.from('about-assets').getPublicUrl(filePath);
+      const { data: pub } = supabase.storage.from('profile-images').getPublicUrl(filePath);
       return pub.publicUrl;
     } finally {
       setUploading(false);

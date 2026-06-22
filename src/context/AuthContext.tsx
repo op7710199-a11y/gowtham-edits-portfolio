@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types/database';
+import { createContext, useContext } from 'react';
 
 interface AuthContextValue {
   session: import('@supabase/supabase-js').Session | null;
@@ -8,8 +9,6 @@ interface AuthContextValue {
   loading: boolean;
   signOut: () => Promise<void>;
 }
-
-import { createContext, useContext } from 'react';
 
 const AuthContext = createContext<AuthContextValue>({
   session: null,
