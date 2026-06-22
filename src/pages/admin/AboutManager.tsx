@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Save, RefreshCw, Eye, Upload, Instagram, Plus, X, AlertCircle } from 'lucide-react';
+import { Save, RefreshCw, Eye, Upload, Instagram, MessageCircle, Plus, X, AlertCircle } from 'lucide-react';
 import { PageHeader } from '../../components/admin/AdminUI';
 import { Field, Toggle } from './PortfolioManager';
 import { useAboutAdmin } from '../../hooks/useAboutSettings';
@@ -52,7 +52,7 @@ export function AboutManager() {
     <div>
       <PageHeader
         title="About Manager"
-        subtitle="Update the profile image, bio, skills, quote, Instagram link, and CTA text shown in the About section."
+        subtitle="Update the profile image, bio, skills, quote, Instagram link, WhatsApp link, and CTA text shown in the About section."
         action={
           <button type="button" onClick={handleSave} disabled={saving || loading} className="btn-primary py-2.5 disabled:opacity-50">
             {saving ? <><RefreshCw className="h-4 w-4 animate-spin" /> Saving...</> : <><Save className="h-4 w-4" /> Save Changes</>}
@@ -167,6 +167,16 @@ export function AboutManager() {
                   onChange={(e) => update('instagram_url', e.target.value)}
                   placeholder="https://instagram.com/gowtham.edits"
                   className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-11 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none"
+                />
+              </div>
+              <div className="relative">
+                <MessageCircle className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-green-400" />
+                <input
+                  type="url"
+                  value={form.whatsapp_url ?? ''}
+                  onChange={(e) => update('whatsapp_url', e.target.value)}
+                  placeholder="https://wa.me/91XXXXXXXXXX"
+                  className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-11 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-green-500/50 focus:outline-none"
                 />
               </div>
               <Field label="CTA Button Text" value={form.cta_text} onChange={(v) => update('cta_text', v)} placeholder="Let's Work Together" />

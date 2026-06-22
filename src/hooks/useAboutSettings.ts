@@ -12,6 +12,7 @@ export interface AboutSettings {
   quote: string;
   quote_author: string;
   instagram_url: string;
+  whatsapp_url: string;
   cta_text: string;
   is_published: boolean;
 }
@@ -26,6 +27,7 @@ const DEFAULT_ABOUT: AboutSettings = {
   quote: 'Every frame tells a story. Every cut moves it forward.',
   quote_author: 'Gowtham',
   instagram_url: '',
+  whatsapp_url: '',
   cta_text: "Let's Work Together",
   is_published: true,
 };

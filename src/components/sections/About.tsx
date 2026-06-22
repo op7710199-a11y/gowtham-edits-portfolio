@@ -1,4 +1,4 @@
-import { Quote, Instagram, ArrowRight } from 'lucide-react';
+import { Quote, Instagram, MessageCircle, ArrowRight } from 'lucide-react';
 import { Reveal, SectionHeading } from '../Reveal';
 import { useAboutSettings } from '../../hooks/useAboutSettings';
 
@@ -71,6 +71,19 @@ export function About() {
                   aria-label="Instagram"
                 >
                   <Instagram className="h-4 w-4" />
+                </a>
+              )}
+
+              {/* WhatsApp badge */}
+              {about.whatsapp_url && (
+                <a
+                  href={about.whatsapp_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute left-2 top-2 grid h-10 w-10 place-items-center rounded-full border border-green-500/30 bg-ink-950/80 text-green-300 backdrop-blur-md transition-all hover:scale-110 hover:bg-green-500 hover:text-ink-950"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="h-4 w-4" />
                 </a>
               )}
             </div>
