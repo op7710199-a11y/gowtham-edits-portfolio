@@ -1,9 +1,4 @@
-/*
-  Logo component — renders the official GOWTHAM EDITS brand logo.
-  The logo is the brush-script wordmark: "Gowtham" in white, "edits" in gold,
-  on a black background. We embed it as an <img> pointing to /logo.svg.
-  A pure-CSS fallback text version renders automatically if the image fails to load.
-*/
+import { useLogo } from '../hooks/useLogo';
 
 interface LogoProps {
   height?: number;
@@ -14,10 +9,15 @@ interface LogoProps {
 }
 
 export function Logo({ height = 48, className = '', compact = false, textOnly = false, href }: LogoProps) {
-  const inner = textOnly ? (
+  const { logoUrl } = useLogo();
+
+  const useImage = !textOnly && logoUrl;
+  const inner = useImage ? (
+    <ImageLogo src={logoUrl!} height={height} compact={compact} />
+  ) : textOnly ? (
     <TextLogo compact={compact} height={height} />
   ) : (
-    <ImageLogo height={height} compact={compact} />
+    <TextLogo compact={compact} height={height} />
   );
 
   const base = `inline-flex items-center shrink-0 ${className}`;
@@ -32,7 +32,7 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
   return <span className={base}>{inner}</span>;
 }
 
-function ImageLogo({ height, compact }: { height: number; compact: boolean }) {
+function ImageLogo({ src, height, compact }: { src: string; height: number; compact: boolean }) {
   const fallback = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
     img.onerror = null;
@@ -51,7 +51,7 @@ function ImageLogo({ height, compact }: { height: number; compact: boolean }) {
   if (compact) {
     return (
       <img
-        src="/logo.svg"
+        src={src}
         alt="GOWTHAM EDITS logo"
         width={height}
         height={height}
@@ -64,7 +64,7 @@ function ImageLogo({ height, compact }: { height: number; compact: boolean }) {
   }
   return (
     <img
-      src="/logo.svg"
+      src={src}
       alt="GOWTHAM EDITS"
       height={height}
       style={{ height, width: 'auto' }}

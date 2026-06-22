@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Images, Briefcase, DollarSign, Star,
   MessageSquare, Users, Settings, Search, Activity,
   ChevronLeft, ChevronRight, LogOut, ExternalLink,
-  BarChart2, Tv2, User,
+  BarChart2, Tv2, User, Image as ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Logo } from '../Logo';
@@ -31,6 +31,7 @@ const NAV_GROUPS = [
     items: [
       { path: '/admin/hero', icon: Tv2, label: 'Hero Settings', roles: ['super_admin', 'admin'] },
       { path: '/admin/about', icon: User, label: 'About Manager', roles: ['super_admin', 'admin'] },
+      { path: '/admin/logo', icon: ImageIcon, label: 'Logo Manager', roles: ['super_admin'] },
       { path: '/admin/stats', icon: BarChart2, label: 'Statistics', roles: ['super_admin', 'admin'] },
     ],
   },
@@ -64,7 +65,6 @@ export function AdminSidebar() {
 
   return (
     <aside className={`flex h-screen flex-col border-r border-white/[0.06] bg-ink-950 transition-all duration-300 ease-cinematic ${collapsed ? 'w-16' : 'w-64'}`}>
-      {/* Logo */}
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-white/[0.06] px-4">
         {!collapsed && <Logo href="/" height={36} />}
         <button type="button" onClick={() => setCollapsed((v) => !v)}
@@ -73,8 +73,6 @@ export function AdminSidebar() {
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
-
-      {/* Nav */}
       <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin">
         <div className="space-y-5 px-2">
           {NAV_GROUPS.map((group) => {
@@ -109,8 +107,6 @@ export function AdminSidebar() {
           })}
         </div>
       </nav>
-
-      {/* Footer */}
       <div className="border-t border-white/[0.06] p-3">
         {!collapsed && profile && (
           <div className="mb-2 flex items-center gap-2.5 rounded-xl bg-white/[0.03] px-3 py-2.5">

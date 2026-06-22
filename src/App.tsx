@@ -16,6 +16,7 @@ import { FaqsManager } from './pages/admin/FaqsManager';
 import { StatsManager } from './pages/admin/StatsManager';
 import { HeroSettingsPage } from './pages/admin/HeroSettings';
 import { AboutManager } from './pages/admin/AboutManager';
+import { LogoManager } from './pages/admin/LogoManager';
 
 // Public site components
 import { useState } from 'react';
@@ -97,6 +98,7 @@ export default function App() {
             <Route index element={<Dashboard />} />
             <Route path="portfolio" element={<PortfolioManager />} />
             <Route path="hero" element={<ProtectedRoute roles={['super_admin', 'admin']}><HeroSettingsPage /></ProtectedRoute>} />
+            <Route path="logo" element={<ProtectedRoute roles={['super_admin']}><LogoManager /></ProtectedRoute>} />
             <Route path="stats" element={<ProtectedRoute roles={['super_admin', 'admin']}><StatsManager /></ProtectedRoute>} />
             <Route path="about" element={<ProtectedRoute roles={['super_admin', 'admin']}><AboutManager /></ProtectedRoute>} />
             <Route path="services" element={<ProtectedRoute roles={['super_admin', 'admin']}><ServicesManager /></ProtectedRoute>} />
