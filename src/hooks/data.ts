@@ -1,88 +1,71 @@
 import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import type {
-  Service,
-  PricingTier,
-  PortfolioItem,
-  Testimonial,
-  FaqItem,
+  Service, PricingTier, PortfolioItem, Testimonial, FaqItem, Inquiry, ActivityLog, Stat,
 } from '../types/database';
 import {
-  SERVICES as SEED_SERVICES,
-  PRICING as SEED_PRICING,
-  PROJECTS as SEED_PROJECTS,
-  TESTIMONIALS as SEED_TESTIMONIALS,
-  FAQS as SEED_FAQS,
+  PUBLIC_TABLES,
 } from './seed';
 
-export interface PublicData {
-  services: Service[];
-  pricing: PricingTier[];
-  portfolio: PortfolioItem[];
-  testimonials: Testimonial[];
-  faqs: FaqItem[];
-  loading: boolean;
-  error: string | null;
-}
+// ============================================================================
+// PUBLIC DATA HOOK — anonymous reads of published content
+// ============================================================================
 
-export function usePublicData(): PublicData {
-  const [data, setData] = useState<Omit<PublicData, 'loading' | 'error'>>({
-    services: SEED_SERVICES as unknown as Service[],
-    pricing: SEED_PRICING as unknown as PricingTier[],
-    portfolio: SEED_PROJECTS as unknown as PortfolioItem[],
-    testimonials: SEED_TESTIMONIALS as unknown as Testimonial[],
-    faqs: SEED_FAQS as unknown as FaqItem[],
+export function usePublicData() {
+  const [data, setData] = useState<{
+    services: Service[];
+    pricing: PricingTier[];
+    portfolio: PortfolioItem[];
+    testimonials: Testimonial[];
+    faqs: FaqItem[];
+    stats: Stat[];
+    loading: boolean;
+  }>({
+    services: [], pricing: [], portfolio: [], testimonials: [], faqs: [], stats: [], loading: true,
   });
-  const [loading, setLoading] = useState(true);
-  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const safe = async <T,>(p: PromiseLike<{ data: T[] | null; error: { message: string } | null }>, fallback: T[]): Promise<T[]> => {
-        try {
-          const { data, error } = await p;
-          if (error) return fallback;
-          return (data ?? fallback) as T[];
-        } catch {
-          return fallback;
-        }
-      };
-
-      const [services, pricing, portfolio, testimonials, faqs] = await Promise.all([
-        safe(
+      try {
+        const [svc, pri, port, tes, faq, stat] = await Promise.all([
           supabase.from('services').select('*').eq('is_published', true).order('display_order'),
-          SEED_SERVICES as unknown as Service[]
-        ),
-        safe(
           supabase.from('pricing_tiers').select('*').eq('is_published', true).order('display_order'),
-          SEED_PRICING as unknown as PricingTier[]
-        ),
-        safe(
           supabase.from('portfolio_items').select('*').eq('is_published', true).order('display_order'),
-          SEED_PROJECTS as unknown as PortfolioItem[]
-        ),
-        safe(
           supabase.from('testimonials').select('*').eq('is_published', true).order('display_order'),
-          SEED_TESTIMONIALS as unknown as Testimonial[]
-        ),
-        safe(
           supabase.from('faqs').select('*').eq('is_published', true).order('display_order'),
-          SEED_FAQS as unknown as FaqItem[]
-        ),
-      ]);
-
-      if (!active) return;
-
-      setData({ services, pricing, portfolio, testimonials, faqs });
-      setLoading(false);
+          supabase.from('stats').select('*').eq('is_published', true).order('display_order'),
+        ]);
+        if (!active) return;
+        setData({
+          services: (svc.data as Service[]) || [],
+          pricing: (pri.data as PricingTier[]) || [],
+          portfolio: (port.data as PortfolioItem[]) || [],
+          testimonials: (tes.data as Testimonial[]) || [],
+          faqs: (faq.data as FaqItem[]) || [],
+          stats: (stat.data as Stat[]) || [],
+          loading: false,
+        });
+      } catch {
+        if (active) setData((d) => ({ ...d, loading: false }));
+      }
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
-  return { ...data, loading, error };
+  return data;
+}
+
+// ============================================================================
+// ADMIN TABLE HOOK — generic CRUD for admin panels
+// ============================================================================
+
+/** Remove auto-generated fields before insert/update so Postgres can apply defaults. */
+function stripGenerated<T extends Record<string, unknown>>(payload: Partial<T>): Partial<T> {
+  const { id, created_at, updated_at, ...rest } = payload as Record<string, unknown>;
+  // Drop empty-string id (from EMPTY form constants) — DB will gen_random_uuid()
+  if (id !== undefined && id !== '' && id !== null) (rest as Record<string, unknown>).id = id;
+  return rest as Partial<T>;
 }
 
 export function useAdminTable<T extends { id: string; display_order?: number }>(
@@ -96,28 +79,31 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
     setLoading(true);
     setError(null);
     try {
-      const query = supabase.from(table).select('*');
-      const hasOrder = ['services', 'pricing_tiers', 'portfolio_items', 'testimonials', 'faqs'].includes(table);
-      const { data, error: err } = hasOrder
-        ? await query.order('display_order')
-        : await query.order('created_at', { ascending: false });
+      let query = supabase.from(table).select('*');
+      // Only order by display_order if the table has it
+      if (PUBLIC_TABLES.includes(table)) {
+        query = query.order('display_order');
+      } else {
+        query = query.order('created_at', { ascending: false });
+      }
+      const { data, error: err } = await query;
       if (err) throw err;
-      setRows((data ?? []) as T[]);
+      setRows((data as T[]) || []);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(e instanceof Error ? e.message : 'Failed to load');
+      setRows([]);
     } finally {
       setLoading(false);
     }
   }, [table]);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const create = async (payload: Partial<T>): Promise<T> => {
+    const clean = stripGenerated<T>(payload);
     const { data, error: err } = await supabase
       .from(table)
-      .insert(payload)
+      .insert(clean)
       .select()
       .single();
     if (err) throw err;
@@ -126,9 +112,10 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
   };
 
   const update = async (id: string, patch: Partial<T>): Promise<T> => {
+    const clean = stripGenerated<T>(patch);
     const { data, error: err } = await supabase
       .from(table)
-      .update({ ...patch, updated_at: new Date().toISOString() })
+      .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -143,34 +130,41 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
     await fetchAll();
   };
 
-  return { rows, loading, error, refetch: fetchAll, create, update, remove };
+  const reorder = async (id: string, newOrder: number): Promise<void> => {
+    const { error: err } = await supabase
+      .from(table)
+      .update({ display_order: newOrder })
+      .eq('id', id);
+    if (err) throw err;
+    await fetchAll();
+  };
+
+  return { rows, loading, error, create, update, remove, reorder, refresh: fetchAll };
 }
 
+// ============================================================================
+// ACTIVITY LOG HOOK
+// ============================================================================
+
 export function useActivityLog() {
-  const log = useCallback(
-    async (
-      action: string,
-      entity: string,
-      entityId?: string,
-      details?: Record<string, unknown>
-    ) => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) return;
-        await supabase.from('activity_logs').insert({
-          user_id: session.user.id,
-          action,
-          entity,
-          entity_id: entityId ?? null,
-          details: details ?? {},
-        });
-      } catch {
-        // Non-critical — silently ignore log failures
-      }
-    },
-    []
-  );
-  return log;
+  return useCallback(async (
+    action: string,
+    entity: string,
+    entityId?: string,
+    details?: Record<string, unknown>
+  ) => {
+    try {
+      await supabase.from('activity_logs').insert({
+        action,
+        entity,
+        entity_id: entityId || null,
+        details: details || null,
+      });
+    } catch {
+      // non-blocking — activity log failures shouldn't break the main operation
+    }
+  }, []);
 }
+
+// Re-export PUBLIC_TABLES for convenience
+export { PUBLIC_TABLES };

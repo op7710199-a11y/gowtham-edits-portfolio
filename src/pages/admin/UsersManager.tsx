@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Plus, UserCheck, UserX, Shield, KeyRound } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Shield, KeyRound, UserCheck, UserX, ChevronUp, ChevronDown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Modal, ConfirmDialog, StatusBadge, PageHeader } from '../../components/admin/AdminUI';
 import { DataTable, type Column } from '../../components/admin/DataTable';
@@ -18,6 +18,7 @@ export function UsersManager() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [inviteForm, setInviteForm] = useState({ email: '', full_name: '', password: DEFAULT_TEMP_PASSWORD, role: 'editor' as UserRole });
+  const [editTarget, setEditTarget] = useState<Profile | null>(null);
   const [editRole, setEditRole] = useState<UserRole>('editor');
   const [resetTarget, setResetTarget] = useState<Profile | null>(null);
   const [resetting, setResetting] = useState(false);
@@ -37,7 +38,7 @@ export function UsersManager() {
     }
   };
 
-  useEffect(() => { fetchUsers(); }, []);
+  useState(() => { fetchUsers(); });
 
   const inviteUser = async () => {
     if (!inviteForm.email.trim() || !inviteForm.password) {
@@ -70,6 +71,29 @@ export function UsersManager() {
     }
   };
 
+  const saveRole = async () => {
+    if (!editTarget) return;
+    // Prevent demoting the last super_admin
+    if (editTarget.role === 'super_admin' && editRole !== 'super_admin') {
+      const superAdminCount = users.filter((u) => u.role === 'super_admin' && u.is_active).length;
+      if (superAdminCount <= 1) {
+        setFormError('Cannot demote the last super admin. Promote another user first.');
+        return;
+      }
+    }
+    setSaving(true);
+    try {
+      await supabase.from('profiles').update({ role: editRole }).eq('id', editTarget.id);
+      await log('update', 'user', editTarget.id, { role: editRole });
+      await fetchUsers();
+      setEditTarget(null);
+    } catch (e) {
+      setFormError(e instanceof Error ? e.message : 'Update failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const resetPassword = async () => {
     if (!resetTarget) return;
     setResetting(true);
@@ -91,17 +115,20 @@ export function UsersManager() {
   };
 
   const toggleActive = async (user: Profile) => {
+    // Prevent suspending the last super_admin
+    if (user.role === 'super_admin' && user.is_active) {
+      const superAdminCount = users.filter((u) => u.role === 'super_admin' && u.is_active && u.id !== user.id).length;
+      if (superAdminCount === 0) {
+        setFormError('Cannot suspend the last super admin.');
+        setDeactivateTarget(null);
+        return;
+      }
+    }
     await supabase.from('profiles').update({ is_active: !user.is_active }).eq('id', user.id);
     await log('update', 'user', user.id, { is_active: !user.is_active });
     await fetchUsers();
     setDeactivateTarget(null);
   };
-
-  const updateRole = async () => {
-    if (!deactivateTarget) return;
-    // unused — placeholder for role edit
-  };
-  void updateRole;
 
   const columns: Column<Profile>[] = [
     { key: 'full_name', label: 'Name', render: (r) => (
@@ -129,7 +156,10 @@ export function UsersManager() {
     { key: 'actions', label: '', align: 'right', render: (r) =>
       r.id !== currentUser?.id ? (
         <div className="flex items-center gap-1">
-          <button type="button" onClick={() => setResetTarget(r)} title="Reset password to default" className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 transition-colors hover:bg-amber-500/10 hover:text-amber-400">
+          <button type="button" onClick={() => { setEditTarget(r); setEditRole(r.role); }} title="Edit role" className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 transition-colors hover:bg-blue-500/10 hover:text-blue-400">
+            <Shield className="h-4 w-4" />
+          </button>
+          <button type="button" onClick={() => setResetTarget(r)} title="Reset password" className="grid h-8 w-8 place-items-center rounded-lg text-stone-400 transition-colors hover:bg-amber-500/10 hover:text-amber-400">
             <KeyRound className="h-4 w-4" />
           </button>
           <button type="button" onClick={() => setDeactivateTarget(r)} title={r.is_active ? 'Suspend user' : 'Reactivate user'} className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
@@ -146,7 +176,7 @@ export function UsersManager() {
     <div>
       <PageHeader
         title="Users"
-        subtitle="Manage admin accounts, roles, and access. New users get the default temporary password."
+        subtitle="Manage admin accounts, roles, and access."
         action={<button type="button" onClick={() => setInviteOpen(true)} className="btn-primary py-2.5"><Plus className="h-4 w-4" /> Invite User</button>}
       />
       <div className="p-6">
@@ -169,6 +199,34 @@ export function UsersManager() {
             <button type="button" onClick={inviteUser} disabled={saving} className="btn-primary flex-1 disabled:opacity-60">{saving ? 'Creating…' : 'Create User'}</button>
           </div>
         </div>
+      </Modal>
+
+      <Modal open={!!editTarget} onClose={() => setEditTarget(null)} title="Edit Role">
+        {editTarget && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold-gradient text-sm font-bold text-ink-950">
+                {(editTarget.full_name || editTarget.email)[0].toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold text-white">{editTarget.full_name || 'Unnamed'}</div>
+                <div className="truncate text-xs text-stone-500">{editTarget.email}</div>
+              </div>
+            </div>
+            <p className="text-xs text-stone-400">Current role: <span className="font-semibold text-gold-300">{editTarget.role.replace('_', ' ')}</span></p>
+            {formError && <p className="text-xs text-red-400">{formError}</p>}
+            <select value={editRole} onChange={(e) => setEditRole(e.target.value as UserRole)} className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 focus:border-gold-500/50 focus:outline-none">
+              {ROLES.map((r) => <option key={r} value={r}>{r.replace('_', ' ')}</option>)}
+            </select>
+            {(editTarget.role === 'super_admin' && editRole !== 'super_admin') && (
+              <p className="text-xs text-amber-300">Warning: Demoting this user will reduce super admin count.</p>
+            )}
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setEditTarget(null)} className="btn-ghost flex-1">Cancel</button>
+              <button type="button" onClick={saveRole} disabled={saving} className="btn-primary flex-1 disabled:opacity-60">{saving ? 'Saving…' : 'Save Role'}</button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       <ConfirmDialog

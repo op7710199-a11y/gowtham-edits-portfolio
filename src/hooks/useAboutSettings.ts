@@ -122,8 +122,9 @@ export function useAboutAdmin() {
     setSaving(true);
     setError(null);
     try {
+      const { id, ...rest } = form;
       const payload = {
-        ...form,
+        ...rest,
         profile_image_url: imageOverrideUrl ?? form.profile_image_url,
         updated_at: new Date().toISOString(),
       };
