@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -19,8 +18,11 @@ import { StatsManager } from './pages/admin/StatsManager';
 import { HeroSettingsPage } from './pages/admin/HeroSettings';
 import { AboutManager } from './pages/admin/AboutManager';
 import { LogoManager } from './pages/admin/LogoManager';
+
+import { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { FloatingWhatsApp, MobileCTABar, BackToTop } from './components/FloatingActions';
+import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { Hero } from './components/sections/Hero';
 import { ServicesPreview } from './components/sections/ServicesPreview';
 import { FeaturedProjects } from './components/sections/FeaturedProjects';
@@ -48,7 +50,9 @@ function PublicSite() {
   const faqsQ = useFAQs();
 
   const stillLoading =
-    servicesQ.isLoading || pricingQ.isLoading || portfolioQ.isLoading;
+    (servicesQ.isLoading && !servicesQ.data) ||
+    (pricingQ.isLoading && !pricingQ.data) ||
+    (portfolioQ.isLoading && !portfolioQ.data);
 
   if (stillLoading) return <LoadingScreen />;
 
@@ -56,27 +60,66 @@ function PublicSite() {
     <div className="relative min-h-screen bg-ink-950 text-stone-200">
       <Navbar />
       <main>
-        <Hero />
-        <ServicesPreview services={servicesQ.data ?? []} />
-        <FeaturedProjects portfolio={portfolioQ.data ?? []} onOpenProject={setActiveProjectId} />
-        <WhyChoose />
-        <About />
-        <Portfolio
-          portfolio={portfolioQ.data ?? []}
-          externalActiveId={activeProjectId}
-          onActiveIdChange={setActiveProjectId}
-        />
-        <Services services={servicesQ.data ?? []} />
-        <Pricing pricing={pricingQ.data ?? []} />
-        <ProcessSection />
-        <AITools />
+        <SectionErrorBoundary name="Hero">
+          <Hero />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="ServicesPreview">
+          <ServicesPreview services={servicesQ.data ?? []} />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="FeaturedProjects">
+          <FeaturedProjects portfolio={portfolioQ.data ?? []} onOpenProject={setActiveProjectId} />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="WhyChoose">
+          <WhyChoose />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="About">
+          <About />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="Portfolio">
+          <Portfolio
+            portfolio={portfolioQ.data ?? []}
+            externalActiveId={activeProjectId}
+            onActiveIdChange={setActiveProjectId}
+          />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="Services">
+          <Services services={servicesQ.data ?? []} />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="Pricing">
+          <Pricing pricing={pricingQ.data ?? []} />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="Process">
+          <ProcessSection />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="AITools">
+          <AITools />
+        </SectionErrorBoundary>
+
         <InquiryCTA
           heading="Your project deserves a cinematic edit."
           subtext="Whether it's a wedding film, a viral reel, or a bike cinematic — let's build something that lasts."
         />
-        <TestimonialsSection testimonials={testimonialsQ.data ?? []} />
-        <FAQ faqs={faqsQ.data ?? []} />
-        <Contact />
+
+        <SectionErrorBoundary name="Testimonials">
+          <TestimonialsSection testimonials={testimonialsQ.data ?? []} />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="FAQ">
+          <FAQ faqs={faqsQ.data ?? []} />
+        </SectionErrorBoundary>
+
+        <SectionErrorBoundary name="Contact">
+          <Contact />
+        </SectionErrorBoundary>
       </main>
       <Footer />
       <FloatingWhatsApp />
