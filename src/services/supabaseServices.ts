@@ -10,6 +10,14 @@ import type {
   Stat,
 } from '../types/database';
 
+function omit<T extends Record<string, unknown>>(obj: Partial<T>, keys: string[]): Partial<T> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (!keys.includes(k)) out[k] = v;
+  }
+  return out as Partial<T>;
+}
+
 // ─── About ──────────────────────────────────────────────────────────────────
 
 export const aboutService = {
@@ -80,7 +88,7 @@ export const servicesService = {
   },
 
   async create(payload: Partial<Service>): Promise<Service> {
-    const { id, created_at, updated_at, ...clean } = payload;
+    const clean = omit(payload as Record<string, unknown>, ['id', 'created_at', 'updated_at']) as Partial<Service>;
     const { data, error } = await supabase
       .from('services')
       .insert(clean)
@@ -92,7 +100,7 @@ export const servicesService = {
   },
 
   async update(id: string, patch: Partial<Service>): Promise<Service> {
-    const { created_at, updated_at, ...clean } = patch;
+    const clean = omit(patch as Record<string, unknown>, ['created_at', 'updated_at']) as Partial<Service>;
     const { data, error } = await supabase
       .from('services')
       .update({ ...clean, updated_at: new Date().toISOString() })
@@ -133,7 +141,7 @@ export const pricingService = {
   },
 
   async create(payload: Partial<PricingTier>): Promise<PricingTier> {
-    const { id, created_at, updated_at, ...clean } = payload;
+    const clean = omit(payload as Record<string, unknown>, ['id', 'created_at', 'updated_at']) as Partial<PricingTier>;
     const { data, error } = await supabase
       .from('pricing_tiers')
       .insert(clean)
@@ -145,7 +153,7 @@ export const pricingService = {
   },
 
   async update(id: string, patch: Partial<PricingTier>): Promise<PricingTier> {
-    const { created_at, updated_at, ...clean } = patch;
+    const clean = omit(patch as Record<string, unknown>, ['created_at', 'updated_at']) as Partial<PricingTier>;
     const { data, error } = await supabase
       .from('pricing_tiers')
       .update({ ...clean, updated_at: new Date().toISOString() })
@@ -186,7 +194,7 @@ export const portfolioService = {
   },
 
   async create(payload: Partial<PortfolioItem>): Promise<PortfolioItem> {
-    const { id, created_at, updated_at, ...clean } = payload;
+    const clean = omit(payload as Record<string, unknown>, ['id', 'created_at', 'updated_at']) as Partial<PortfolioItem>;
     const { data, error } = await supabase
       .from('portfolio_items')
       .insert(clean)
@@ -198,7 +206,7 @@ export const portfolioService = {
   },
 
   async update(id: string, patch: Partial<PortfolioItem>): Promise<PortfolioItem> {
-    const { created_at, updated_at, ...clean } = patch;
+    const clean = omit(patch as Record<string, unknown>, ['created_at', 'updated_at']) as Partial<PortfolioItem>;
     const { data, error } = await supabase
       .from('portfolio_items')
       .update({ ...clean, updated_at: new Date().toISOString() })
@@ -239,7 +247,7 @@ export const testimonialsService = {
   },
 
   async create(payload: Partial<Testimonial>): Promise<Testimonial> {
-    const { id, created_at, updated_at, ...clean } = payload;
+    const clean = omit(payload as Record<string, unknown>, ['id', 'created_at', 'updated_at']) as Partial<Testimonial>;
     const { data, error } = await supabase
       .from('testimonials')
       .insert(clean)
@@ -251,7 +259,7 @@ export const testimonialsService = {
   },
 
   async update(id: string, patch: Partial<Testimonial>): Promise<Testimonial> {
-    const { created_at, updated_at, ...clean } = patch;
+    const clean = omit(patch as Record<string, unknown>, ['created_at', 'updated_at']) as Partial<Testimonial>;
     const { data, error } = await supabase
       .from('testimonials')
       .update({ ...clean, updated_at: new Date().toISOString() })
@@ -292,7 +300,7 @@ export const faqService = {
   },
 
   async create(payload: Partial<FaqItem>): Promise<FaqItem> {
-    const { id, created_at, updated_at, ...clean } = payload;
+    const clean = omit(payload as Record<string, unknown>, ['id', 'created_at', 'updated_at']) as Partial<FaqItem>;
     const { data, error } = await supabase
       .from('faqs')
       .insert(clean)
@@ -304,7 +312,7 @@ export const faqService = {
   },
 
   async update(id: string, patch: Partial<FaqItem>): Promise<FaqItem> {
-    const { created_at, updated_at, ...clean } = patch;
+    const clean = omit(patch as Record<string, unknown>, ['created_at', 'updated_at']) as Partial<FaqItem>;
     const { data, error } = await supabase
       .from('faqs')
       .update({ ...clean, updated_at: new Date().toISOString() })
