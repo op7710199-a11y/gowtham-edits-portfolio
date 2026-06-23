@@ -1,236 +1,401 @@
-import { useState, type FormEvent } from 'react';
 import { MessageCircle, Instagram, Mail, MapPin, Send, Loader2, CheckCircle2, AlertCircle, Youtube, Facebook, Linkedin } from 'lucide-react';
 import { Reveal, RevealScope, SectionHeading } from '../Reveal';
-import { INSTAGRAM_URL, INSTAGRAM_HANDLE, WHATSAPP_NUMBER, WHATSAPP_DISPLAY, EMAIL, LOCATION } from '../../data/content';
+import { useSiteSettings } from '../../hooks/useSupabaseQueries';
 import { supabase } from '../../lib/supabase';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
-type FormErrors = Partial<Record<'name' | 'email' | 'message', string>>;
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  message?: string;
+}
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validate(values: { name: string; email: string; message: string }): FormErrors {
   const errors: FormErrors = {};
-  if (!values.name.trim()) errors.name = 'Please enter your name';
-  else if (values.name.trim().length < 2) errors.name = 'Name too short';
-  if (!values.email.trim()) errors.email = 'Email is required';
+  if (!values.name.trim()) errors.name = 'Name is required';
+  else if (values.name.trim().length < 2) errors.name = 'Name must be at least 2 characters';
+  else if (!values.email.trim()) errors.email = 'Email is required';
   else if (!EMAIL_RE.test(values.email.trim())) errors.email = 'Enter a valid email';
-  if (!values.message.trim()) errors.message = 'Tell me about your project';
-  else if (values.message.trim().length < 10) errors.message = 'A little more detail helps';
+  else if (!values.message.trim()) errors.message = 'Message is required';
+  else if (values.message.trim().length < 10) errors.message = 'Message must be at least 10 characters';
   return errors;
 }
 
-const PROJECT_TYPES = ['Wedding Film', 'Pre-Wedding Cinematic', 'Haldi Highlights', 'Bike Cinematic', 'Instagram Reel', 'YouTube Video', 'Commercial Ad', 'Music Video', 'Other'];
-const BUDGETS = ['Under ₹5,000', '₹5,000 – ₹15,000', '₹15,000 – ₹30,000', '₹30,000 – ₹50,000', '₹50,000+', 'Not sure — advise me'];
-const DEADLINES = ['24 hours', '2–3 days', 'This week', 'Next week', '2–4 weeks', 'Flexible'];
+const SERVICE_OPTIONS = [
+  'Wedding Video Editing',
+  'Haldi Highlights',
+  'Pre-Wedding Cinematics',
+  'Bike Cinematic Editing',
+  'Instagram Reels Editing',
+  'YouTube Video Editing',
+  'Color Grading',
+  'Motion Graphics',
+  'Custom Editing Services',
+];
+
+const FALLBACK_CONTACT = {
+  instagram_url: 'https://www.instagram.com/gowtham.edits1',
+  instagram_handle: 'gowtham.edits1',
+  whatsapp_number: 'XXXXXXXXXX',
+  whatsapp_display: '+91 90000 00000',
+  email: 'hello@gowthamedits.com',
+  location: 'Bengaluru, India • Worldwide remote',
+  youtube_url: '',
+  facebook_url: '',
+  linkedin_url: '',
+};
 
 export function Contact() {
+  const { data: settings } = useSiteSettings();
+  const s = { ...FALLBACK_CONTACT, ...Object.fromEntries(
+    Object.entries(settings ?? {}).map(([k, v]) => [k, typeof v === 'string' ? v : String(v)])
+  ) };
   const [form, setForm] = useState({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const update = (key: keyof typeof form, value: string) => {
-    setForm((f) => ({ ...f, [key]: value }));
-    if (touched[key]) setErrors(validate({ ...form, [key]: value }));
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+    if (touched[name]) {
+      const next = validate({ ...form, [name]: value });
+      setErrors((p) => ({ ...p, [name]: next[name] }));
+    }
   };
 
-  const handleBlur = (key: keyof typeof form) => {
-    setTouched((t) => ({ ...t, [key]: true }));
-    setErrors(validate(form));
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name } = e.target;
+    setTouched((p) => ({ ...p, [name]: true }));
+    const next = validate(form);
+    setErrors((p) => ({ ...p, [name]: next[name] }));
   };
 
-  const onSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const errs = validate(form);
-    if (Object.keys(errs).length > 0) { setErrors(errs); setTouched({ name: true, email: true, message: true }); return; }
+    const nextErrors = validate(form);
+    setErrors(nextErrors);
+    setTouched({ name: true, email: true, message: true });
+    if (Object.keys(nextErrors).length > 0) return;
+
     setStatus('submitting');
+    setErrorMsg('');
     try {
       const { error } = await supabase.from('inquiries').insert({
         name: form.name.trim(),
         email: form.email.trim(),
-        phone: form.phone || null,
-        whatsapp: form.whatsapp || null,
-        service: form.project_type || form.service || null,
+        phone: form.phone.trim() || null,
+        whatsapp: form.whatsapp.trim() || null,
+        service: form.service || null,
         project_type: form.project_type || null,
         budget_range: form.budget_range || null,
         delivery_deadline: form.delivery_deadline || null,
         message: form.message.trim(),
-        status: 'new',
         source: 'website',
       });
       if (error) throw error;
       setStatus('success');
       setForm({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
       setTouched({});
-    } catch (e) {
+      setErrors({});
+    } catch (err) {
       setStatus('error');
-      setErrorMsg(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
+      setErrorMsg(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     }
   };
 
-  const inputBase = (hasError: boolean) =>
-    `w-full rounded-xl border bg-ink-900/60 px-4 py-3.5 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none transition-colors ${
-      hasError ? 'border-red-500/50 focus:border-red-400' : 'border-white/10 focus:border-gold-500/50'
-    }`;
+  const contactCards = [
+    { icon: MessageCircle, label: 'WhatsApp', value: s.whatsapp_display, href: `https://wa.me/${s.whatsapp_number}`, color: 'text-green-400' },
+    { icon: Instagram, label: 'Instagram', value: `@${s.instagram_handle}`, href: s.instagram_url, color: 'text-pink-400' },
+    { icon: Mail, label: 'Email', value: s.email, href: `mailto:${s.email}`, color: 'text-gold-300' },
+    { icon: MapPin, label: 'Location', value: s.location, href: null, color: 'text-blue-400' },
+  ];
+
+  const socialLinks = [
+    { icon: Instagram, href: s.instagram_url, label: 'Instagram', color: 'hover:border-pink-500/40 hover:text-pink-300' },
+    { icon: Youtube, href: s.youtube_url || '#', label: 'YouTube', color: 'hover:border-red-500/40 hover:text-red-300' },
+    { icon: Facebook, href: s.facebook_url || '#', label: 'Facebook', color: 'hover:border-blue-500/40 hover:text-blue-300' },
+    { icon: Linkedin, href: s.linkedin_url || '#', label: 'LinkedIn', color: 'hover:border-sky-500/40 hover:text-sky-300' },
+  ];
 
   return (
     <section id="contact" className="section-padding relative overflow-hidden">
-      <div className="pointer-events-none absolute -left-20 top-1/4 -z-10 h-[50vh] w-[50vh] rounded-full bg-gold-500/10 blur-[120px]" />
+      <div className="pointer-events-none absolute left-0 top-1/4 -z-10 h-[35vh] w-[35vh] rounded-full bg-gold-500/10 blur-[120px]" />
+
       <div className="container-mx">
         <SectionHeading
-          eyebrow="Contact"
-          title={<>Let's create something <span className="text-gradient-gold">cinematic</span></>}
-          subtitle="Drop your project details below and I'll come back with a quote within a few hours."
+          eyebrow="Get In Touch"
+          title={
+            <>
+              Let's create something <span className="text-gradient-gold">worth watching</span>
+            </>
+          }
+          subtitle="Tell me about your project. Whether it's a wedding, a reel, or a bike edit — I'll get back within 24 hours."
         />
 
-        <RevealScope className="mt-14 grid gap-10 lg:grid-cols-[1.5fr_1fr]">
-          {/* ── Form ── */}
-          <Reveal>
-            {status === 'success' ? (
-              <div className="flex h-full flex-col items-center justify-center rounded-3xl border border-green-500/30 bg-green-500/[0.06] p-12 text-center">
-                <CheckCircle2 className="h-16 w-16 text-green-400" />
-                <h3 className="mt-5 font-display text-2xl font-bold text-white">Message Sent!</h3>
-                <p className="mt-3 text-sm text-stone-300 max-w-sm">Your inquiry has been received. I'll get back to you within a few hours — usually sooner.</p>
-                <button type="button" onClick={() => setStatus('idle')} className="mt-6 btn-ghost py-3 px-8">Send Another</button>
-              </div>
-            ) : (
-              <form onSubmit={onSubmit} noValidate className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Name *</label>
-                    <input type="text" value={form.name} onChange={(e) => update('name', e.target.value)} onBlur={() => handleBlur('name')}
-                      placeholder="Your full name" className={inputBase(!!errors.name)} />
-                    {errors.name && touched.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Email *</label>
-                    <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} onBlur={() => handleBlur('email')}
-                      placeholder="you@example.com" className={inputBase(!!errors.email)} />
-                    {errors.email && touched.email && <p className="mt-1 text-xs text-red-400">{errors.email}</p>}
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Phone</label>
-                    <input type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)}
-                      placeholder="+91 90000 00000" className={inputBase(false)} />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">WhatsApp</label>
-                    <input type="tel" value={form.whatsapp} onChange={(e) => update('whatsapp', e.target.value)}
-                      placeholder="+91 90000 00000" className={inputBase(false)} />
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Project Type</label>
-                    <select value={form.project_type} onChange={(e) => update('project_type', e.target.value)} className={inputBase(false)}>
-                      <option value="">Select type…</option>
-                      {PROJECT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Budget Range</label>
-                    <select value={form.budget_range} onChange={(e) => update('budget_range', e.target.value)} className={inputBase(false)}>
-                      <option value="">Select budget…</option>
-                      {BUDGETS.map((b) => <option key={b} value={b}>{b}</option>)}
-                    </select>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Delivery Deadline</label>
-                    <select value={form.delivery_deadline} onChange={(e) => update('delivery_deadline', e.target.value)} className={inputBase(false)}>
-                      <option value="">When do you need it?</option>
-                      {DEADLINES.map((d) => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-400">Project Details *</label>
-                  <textarea value={form.message} onChange={(e) => update('message', e.target.value)} onBlur={() => handleBlur('message')}
-                    rows={4} placeholder="Describe your project — event date, style preferences, footage details, anything helpful…"
-                    className={`${inputBase(!!errors.message)} resize-none`} />
-                  {errors.message && touched.message && <p className="mt-1 text-xs text-red-400">{errors.message}</p>}
-                </div>
-                {status === 'error' && (
-                  <div className="flex items-center gap-2.5 rounded-xl border border-red-500/30 bg-red-500/10 p-3.5">
-                    <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
-                    <p className="text-xs text-red-200">{errorMsg}</p>
+        <div className="mt-14 grid gap-8 lg:grid-cols-[1fr_1.5fr]">
+          {/* Contact info */}
+          <RevealScope className="space-y-4">
+            {contactCards.map((c, i) => (
+              <Reveal key={c.label} delay={i * 80}>
+                {c.href ? (
+                  <a
+                    href={c.href}
+                    target={c.href.startsWith('http') ? '_blank' : undefined}
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all hover:border-gold-500/30 hover:bg-white/[0.04]"
+                  >
+                    <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/[0.03] ${c.color}`}>
+                      <c.icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs uppercase tracking-wider text-stone-500">{c.label}</div>
+                      <div className="truncate text-sm font-medium text-stone-200">{c.value}</div>
+                    </div>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+                    <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/[0.03] ${c.color}`}>
+                      <c.icon className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs uppercase tracking-wider text-stone-500">{c.label}</div>
+                      <div className="truncate text-sm font-medium text-stone-200">{c.value}</div>
+                    </div>
                   </div>
                 )}
-                <button type="submit" disabled={status === 'submitting'}
-                  className="btn-primary w-full py-4 text-base disabled:opacity-60">
-                  {status === 'submitting'
-                    ? <><Loader2 className="h-4 w-4 animate-spin" /> Sending…</>
-                    : <><Send className="h-4 w-4" /> Send Inquiry</>
-                  }
-                </button>
-                <p className="text-center text-xs text-stone-500">Replies within a few hours. Your details are never shared.</p>
-              </form>
-            )}
-          </Reveal>
+              </Reveal>
+            ))}
 
-          {/* ── Contact info ── */}
-          <Reveal>
-            <div className="space-y-6">
-              <div className="card-glass p-6">
-                <h3 className="font-display text-lg font-bold text-white mb-4">Get in touch</h3>
-                <div className="space-y-4">
-                  {[
-                    { icon: MessageCircle, label: 'WhatsApp', value: WHATSAPP_DISPLAY, href: `https://wa.me/${WHATSAPP_NUMBER}`, color: 'text-green-400' },
-                    { icon: Instagram, label: 'Instagram', value: `@${INSTAGRAM_HANDLE}`, href: INSTAGRAM_URL, color: 'text-pink-400' },
-                    { icon: Mail, label: 'Email', value: EMAIL, href: `mailto:${EMAIL}`, color: 'text-gold-300' },
-                    { icon: MapPin, label: 'Location', value: LOCATION, href: null, color: 'text-blue-400' },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-start gap-3">
-                      <span className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/[0.04] ${item.color}`}>
-                        <item.icon className="h-4.5 w-4.5" />
-                      </span>
+            <Reveal delay={320}>
+              <div className="flex items-center gap-3 pt-2">
+                {socialLinks.map((sl) => (
+                  <a
+                    key={sl.label}
+                    href={sl.href}
+                    target={sl.href.startsWith('http') ? '_blank' : undefined}
+                    rel="noopener noreferrer"
+                    aria-label={sl.label}
+                    className={`grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-400 transition-all ${sl.color}`}
+                  >
+                    <sl.icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
+            </Reveal>
+          </RevealScope>
+
+          {/* Form */}
+          <Reveal delay={150}>
+            <form
+n              onSubmit={handleSubmit}
+              className="rounded-3xl border border-white/[0.06] bg-white/[0.02] p-6 sm:p-8"
+            >
+              {status === 'success' ? (
+                <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                  <div className="grid h-16 w-16 place-items-center rounded-full bg-green-500/10 text-green-400">
+                    <CheckCircle2 className="h-8 w-8" />
+                  </div>
+                  <h3 className="font-display text-xl font-bold text-white">Message sent!</h3>
+                  <p className="max-w-sm text-sm text-stone-400">
+                    Thanks for reaching out. I'll get back to you within 24 hours.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setStatus('idle')}
+                    className="btn-ghost px-5 py-2.5 text-sm"
+                  >
+                    Send another message
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {status === 'error' && (
+                    <div className="mb-5 flex items-center gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <span>{errorMsg}</span>
+                    </div>
+                  )}
+
+                  <div className="grid gap-5">
+                    <div className="grid gap-5 sm:grid-cols-2">
                       <div>
-                        <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-stone-500">{item.label}</div>
-                        {item.href ? (
-                          <a href={item.href} target="_blank" rel="noopener noreferrer"
-                            className="text-sm font-medium text-stone-200 hover:text-gold-100 transition-colors">
-                            {item.value}
-                          </a>
-                        ) : (
-                          <span className="text-sm text-stone-300">{item.value}</span>
+                        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">
+                          Name *
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={form.name}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Your full name"
+                          className={`w-full rounded-xl border bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none ${
+                            touched.name && errors.name ? 'border-red-500/50 focus:border-red-500/50' : 'border-white/10 focus:border-gold-500/50'
+                          }`}
+                        />
+                        {touched.name && errors.name && (
+                          <p className="mt-1 text-xs text-red-400">{errors.name}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">
+                          Email *
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={form.email}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="you@example.com"
+                          className={`w-full rounded-xl border bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none ${
+                            touched.email && errors.email ? 'border-red-500/50 focus:border-red-500/50' : 'border-white/10 focus:border-gold-500/50'
+                          }`}
+                        />
+                        {touched.email && errors.email && (
+                          <p className="mt-1 text-xs text-red-400">{errors.email}</p>
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              {/* Social links */}
-              <div className="card-glass p-6">
-                <h3 className="font-display text-sm font-bold text-stone-400 uppercase tracking-widest mb-4">Follow the work</h3>
-                <div className="flex flex-wrap gap-3">
-                  {[
-                    { icon: Instagram, href: INSTAGRAM_URL, label: 'Instagram', color: 'hover:border-pink-500/40 hover:text-pink-300' },
-                    { icon: Youtube, href: '#', label: 'YouTube', color: 'hover:border-red-500/40 hover:text-red-300' },
-                    { icon: Facebook, href: '#', label: 'Facebook', color: 'hover:border-blue-500/40 hover:text-blue-300' },
-                    { icon: Linkedin, href: '#', label: 'LinkedIn', color: 'hover:border-sky-500/40 hover:text-sky-300' },
-                  ].map((s) => (
-                    <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                      className={`grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/[0.03] text-stone-400 transition-all ${s.color}`}
-                      title={s.label}>
-                      <s.icon className="h-5 w-5" />
-                    </a>
-                  ))}
-                </div>
-              </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Phone</label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={form.phone}
+                          onChange={handleChange}
+                          placeholder="Optional"
+                          className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">WhatsApp</label>
+                        <input
+                          type="tel"
+                          name="whatsapp"
+                          value={form.whatsapp}
+                          onChange={handleChange}
+                          placeholder="Optional"
+                          className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none"
+                        />
+                      </div>
+                    </div>
 
-              {/* Quick WhatsApp CTA */}
-              <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I'd like to discuss a video editing project.`}
-                target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 rounded-2xl border border-green-500/30 bg-green-500/10 p-5 text-green-200 transition-all hover:border-green-400/50 hover:bg-green-500/15 hover:scale-[1.01]">
-                <MessageCircle className="h-5 w-5" />
-                <div>
-                  <div className="text-sm font-semibold">Start on WhatsApp</div>
-                  <div className="text-xs text-green-400/70">Fastest response — usually within the hour</div>
-                </div>
-              </a>
-            </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Service</label>
+                      <select
+                        name="service"
+                        value={form.service}
+                        onChange={handleChange}
+                        className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 focus:border-gold-500/50 focus:outline-none"
+                      >
+                        <option value="">Select a service (optional)</option>
+                        {SERVICE_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Budget Range</label>
+                        <select
+                          name="budget_range"
+                          value={form.budget_range}
+                          onChange={handleChange}
+                          className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 focus:border-gold-500/50 focus:outline-none"
+                        >
+                          <option value="">Select range</option>
+                          <option value="Under ₹5,000">Under ₹5,000</option>
+                          <option value="₹5,000 – ₹15,000">₹5,000 – ₹15,000</option>
+                          <option value="₹15,000 – ₹30,000">₹15,000 – ₹30,000</option>
+                          <option value="₹30,000+">₹30,000+</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Delivery Deadline</label>
+                        <select
+                          name="delivery_deadline"
+                          value={form.delivery_deadline}
+                          onChange={handleChange}
+                          className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 focus:border-gold-500/50 focus:outline-none"
+                        >
+                          <option value="">Select deadline</option>
+                          <option value="ASAP">ASAP (within 48 hours)</option>
+                          <option value="1 week">Within 1 week</option>
+                          <option value="2 weeks">Within 2 weeks</option>
+                          <option value="Flexible">Flexible</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">
+                        Message *
+                      </label>
+                      <textarea
+                        name="message"
+                        value={form.message}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        rows={5}
+                        placeholder="Tell me about your project, footage, and what you're looking for..."
+                        className={`w-full resize-none rounded-xl border bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none ${
+                          touched.message && errors.message ? 'border-red-500/50 focus:border-red-500/50' : 'border-white/10 focus:border-gold-500/50'
+                        }`}
+                      />
+                      {touched.message && errors.message && (
+                        <p className="mt-1 text-xs text-red-400">{errors.message}</p>
+                      )}
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={status === 'submitting'}
+                      className="btn-primary w-full py-3.5 disabled:opacity-60"
+                    >
+                      {status === 'submitting' ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Sending...</>
+                      ) : (
+                        <><Send className="h-4 w-4" /> Send Message</>
+                      )}
+                    </button>
+                  </div>
+                </>
+              )}
+            </form>
           </Reveal>
-        </RevealScope>
+        </div>
+
+        {/* WhatsApp CTA */}
+        <Reveal delay={200}>
+          <div className="mt-10 flex flex-col items-center justify-between gap-4 rounded-2xl border border-green-500/20 bg-green-500/[0.04] p-6 sm:flex-row">
+            <div className="flex items-center gap-4">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-green-500/10 text-green-400">
+                <MessageCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-display text-base font-semibold text-white">Prefer WhatsApp?</h3>
+                <p className="text-sm text-stone-400">Quick responses, easy file sharing.</p>
+              </div>
+            </div>
+            <a
+              href={`https://wa.me/${s.whatsapp_number}?text=Hi, I'd like to discuss a video editing project.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-xl bg-green-500/15 px-5 py-2.5 text-sm font-medium text-green-300 transition-all hover:bg-green-500/25"
+            >
+              <MessageCircle className="h-4 w-4" /> Chat now
+            </a>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

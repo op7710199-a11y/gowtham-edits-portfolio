@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'admin' | 'editor';
+export type UserRole = 'super_admin' | 'admin' | 'editor' | 'user';
 
 export interface Profile {
   id: string;
@@ -18,8 +18,8 @@ export interface Service {
   description: string;
   icon: string;
   features: string[];
-  ideal_for: string | null;
-  delivery_time: string | null;
+  ideal_for: string;
+  delivery_time: string;
   display_order: number;
   is_published: boolean;
   created_at: string;
@@ -30,10 +30,10 @@ export interface PricingTier {
   id: string;
   name: string;
   price_label: string;
-  period: string | null;
-  description: string | null;
+  period: string;
+  description: string;
   features: string[];
-  delivery_note: string | null;
+  delivery_note: string;
   is_popular: boolean;
   display_order: number;
   is_published: boolean;
@@ -45,10 +45,10 @@ export interface PortfolioItem {
   id: string;
   title: string;
   category: string;
-  description: string | null;
+  description: string;
   thumbnail_url: string;
-  video_url: string | null;
-  tags: string[] | null;
+  video_url: string;
+  tags: string[];
   is_featured: boolean;
   is_published: boolean;
   display_order: number;
@@ -59,8 +59,8 @@ export interface PortfolioItem {
 export interface Testimonial {
   id: string;
   client_name: string;
-  client_role: string | null;
-  avatar_url: string | null;
+  client_role: string;
+  avatar_url: string;
   rating: number;
   content: string;
   display_order: number;
@@ -83,17 +83,33 @@ export interface Inquiry {
   id: string;
   name: string;
   email: string;
-  phone: string | null;
-  service: string | null;
+  phone: string;
+  service: string;
   message: string;
-  status: string;
-  notes: string | null;
-  whatsapp: string | null;
-  project_type: string | null;
-  budget_range: string | null;
-  delivery_deadline: string | null;
-  source: string | null;
+  status: InquiryStatus;
+  notes: string;
   created_at: string;
+  updated_at: string;
+}
+
+export type InquiryStatus = 'new' | 'contacted' | 'converted' | 'closed';
+
+export interface SiteSetting {
+  id: string;
+  key: string;
+  value: unknown;
+  label: string | null;
+  category: string | null;
+  updated_at: string;
+}
+
+export interface SeoSetting {
+  id: string;
+  page_path: string;
+  meta_title: string;
+  meta_description: string;
+  og_image_url: string;
+  keywords: string[];
   updated_at: string;
 }
 
@@ -105,19 +121,7 @@ export interface ActivityLog {
   entity_id: string | null;
   details: Record<string, unknown> | null;
   created_at: string;
-}
-
-export interface HeroSettings {
-  id: string;
-  headline: string;
-  subheadline: string;
-  video_url: string | null;
-  bg_image_url: string | null;
-  cta_primary: string;
-  cta_secondary: string;
-  cta_whatsapp: string | null;
-  is_video_enabled: boolean;
-  updated_at: string;
+  profile?: Pick<Profile, 'full_name' | 'email' | 'avatar_url'> | null;
 }
 
 export interface AboutSettings {
@@ -136,21 +140,24 @@ export interface AboutSettings {
   updated_at: string;
 }
 
+export interface HeroSettings {
+  id: string;
+  headline: string;
+  subheadline: string;
+  video_url: string;
+  bg_image_url: string;
+  cta_primary: string;
+  cta_secondary: string;
+  cta_whatsapp: string;
+  is_video_enabled: boolean;
+}
+
 export interface Stat {
   id: string;
   label: string;
   value: number;
-  suffix: string | null;
+  suffix: string;
   icon: string;
   display_order: number;
   is_published: boolean;
-}
-
-export interface SiteSetting {
-  id: string;
-  key: string;
-  value: unknown;
-  label: string | null;
-  category: string | null;
-  updated_at: string;
 }

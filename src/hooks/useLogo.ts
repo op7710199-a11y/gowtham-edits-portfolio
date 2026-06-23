@@ -1,46 +1,19 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-
-let cachedLogoUrl: string | null = null;
-const listeners = new Set<(url: string) => void>();
-
-function notify(url: string) {
-  cachedLogoUrl = url;
-  listeners.forEach((fn) => fn(url));
-}
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { siteSettingsService } from '../services/supabaseServices';
+import { queryKeys } from './useSupabaseQueries';
 
 export function useLogo() {
-  const [logoUrl, setLogoUrl] = useState<string | null>(cachedLogoUrl);
-  const [loading, setLoading] = useState(cachedLogoUrl === null);
+  const qc = useQueryClient();
+  const { data: logoUrl, isLoading: loading } = useQuery({
+    queryKey: queryKeys.logo,
+    queryFn: () => siteSettingsService.getLogoUrl(),
+    staleTime: 10 * 60 * 1000,
+    retry: 2,
+  });
 
-  useEffect(() => {
-    const listener = (url: string) => setLogoUrl(url);
-    listeners.add(listener);
+  const setLogoUrl = (url: string) => {
+    qc.setQueryData(queryKeys.logo, url);
+  };
 
-    if (cachedLogoUrl === null) {
-      (async () => {
-        try {
-          const { data, error } = await supabase
-            .from('site_settings')
-            .select('value')
-            .eq('key', 'logo_url')
-            .maybeSingle();
-          if (!error && data) {
-            const val = typeof data.value === 'string' ? data.value : (data.value as string)?.toString?.() ?? '';
-            notify(val || '');
-          } else {
-            notify('');
-          }
-        } catch {
-          notify('');
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
-
-    return () => { listeners.delete(listener); };
-  }, []);
-
-  return { logoUrl, loading, setLogoUrl: notify };
+  return { logoUrl: logoUrl ?? '', loading, setLogoUrl };
 }
