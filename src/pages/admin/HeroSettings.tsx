@@ -1,52 +1,96 @@
-import { useEffect, useState } from 'react';
-import { Save, RefreshCw, Eye } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { useEffect, useRef, useState } from 'react';
+import { Upload, RefreshCw, Save } from 'lucide-react';
 import { PageHeader } from '../../components/admin/AdminUI';
-import { Field, Toggle } from './PortfolioManager';
+import { supabase } from '../../lib/supabase';
 import { useActivityLog } from '../../hooks/data';
-import type { HeroSettings } from '../../hooks/useHeroSettings';
 
-const DEFAULT: HeroSettings = {
-  id: '',
-  headline: 'Transforming Footage Into Cinematic Stories',
-  subheadline: 'Premium video editing for weddings, reels, bike films & brands.',
+type IconName = 'Film' | 'Heart' | 'Sun' | 'Bike' | 'Smartphone' | 'Youtube' | 'Palette' | 'Sparkles' | 'Wand2' | 'Users' | 'Award' | 'Clock' | 'CheckCircle' | 'MessageCircle' | 'Instagram' | 'Send' | 'ArrowUpRight';
+
+const ICON_OPTIONS: IconName[] = ['Film', 'Heart', 'Sun', 'Bike', 'Smartphone', 'Youtube', 'Palette', 'Sparkles', 'Wand2', 'Users', 'Award', 'Clock', 'CheckCircle', 'MessageCircle', 'Instagram', 'Send', 'ArrowUpRight'];
+
+interface HeroForm {
+  headline: string;
+  subheadline: string;
+  video_url: string;
+  bg_image_url: string;
+  cta_primary: string;
+  cta_secondary: string;
+  cta_whatsapp: string;
+  is_video_enabled: boolean;
+}
+
+const EMPTY_FORM: HeroForm = {
+  headline: '',
+  subheadline: '',
   video_url: '',
-  bg_image_url: 'https://images.pexels.com/photos/3014019/pexels-photo-3014019.jpeg?auto=compress&cs=tinysrgb&w=1920',
-  cta_primary: 'View Portfolio',
-  cta_secondary: 'Get Free Quote',
-  cta_whatsapp: 'WhatsApp Me',
+  bg_image_url: '',
+  cta_primary: '',
+  cta_secondary: '',
+  cta_whatsapp: '',
   is_video_enabled: false,
 };
 
 export function HeroSettingsPage() {
-  const [form, setForm] = useState<HeroSettings>(DEFAULT);
+  const [form, setForm] = useState<HeroForm>(EMPTY_FORM);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const log = useActivityLog();
 
   useEffect(() => {
-    supabase.from('hero_settings').select('*').limit(1).maybeSingle().then(({ data }) => {
-      if (data) setForm(data as HeroSettings);
-      setLoading(false);
-    });
+    let active = true;
+    (async () => {
+      try {
+        const { data, error: err } = await supabase.from('hero_settings').select('*').limit(1).maybeSingle();
+        if (!active) return;
+        if (err) {
+          setError('Failed to load hero settings: ' + err.message);
+          setLoading(false);
+          return;
+        }
+        if (data) setForm(data as HeroForm);
+        setLoading(false);
+      } catch (e) {
+        if (!active) return;
+        setError('Failed to load hero settings. Please refresh.');
+        setLoading(false);
+      }
+    })();
+    return () => { active = false; };
   }, []);
 
-  const save = async () => {
-    setSaving(true); setError(null);
+  const uploadImage = async (file: File): Promise<string> => {
+    setUploading(true);
+    setError(null);
     try {
-      if (form.id) {
-        const { error: err } = await supabase.from('hero_settings')
-          .update({ ...form, updated_at: new Date().toISOString() })
-          .eq('id', form.id);
+      const ext = file.name.split('.').pop() || 'jpg';
+      const fileName = `hero-bg-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('about-assets').upload(fileName, file, { cacheControl: '3600', upsert: true });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('about-assets').getPublicUrl(fileName);
+      return pub.publicUrl;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const save = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const { data: existing } = await supabase.from('hero_settings').select('id').limit(1).maybeSingle();
+      if (existing) {
+        const { error: err } = await supabase.from('hero_settings').update(form).eq('id', existing.id);
         if (err) throw err;
+        try { await log('update', 'hero_settings', existing.id); } catch { /* non-critical */ }
       } else {
-        const { data, error: err } = await supabase.from('hero_settings').insert(form).select().single();
+        const { data, error: err } = await supabase.from('hero_settings').insert(form).select().maybeSingle();
         if (err) throw err;
-        if (data) setForm(data as HeroSettings);
+        try { await log('create', 'hero_settings', data?.id); } catch { /* non-critical */ }
       }
-      await log('update', 'hero_settings', form.id);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) {
@@ -56,69 +100,64 @@ export function HeroSettingsPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div>
+        <PageHeader title="Hero Settings" subtitle="Configure the homepage hero section." />
+        <div className="space-y-4 p-6">
+          {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-10 animate-pulse rounded-xl bg-white/[0.04]" />)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <PageHeader
-        title="Hero Settings"
-        subtitle="Control the headline, video/image background, and CTA buttons shown in the hero section."
-        action={
-          <button type="button" onClick={save} disabled={saving || loading} className="btn-primary py-2.5 disabled:opacity-50">
-            {saving ? <><RefreshCw className="h-4 w-4 animate-spin" /> Saving…</> : <><Save className="h-4 w-4" /> Save Changes</>}
-          </button>
-        }
-      />
-      <div className="p-6 space-y-8">
-        {saved && <div className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-300">Hero settings saved successfully.</div>}
-        {error && <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">{error}</div>}
-
-        {loading ? (
-          <div className="space-y-4">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-12 animate-pulse rounded-xl bg-white/[0.04]" />)}</div>
-        ) : (
-          <>
-            {/* Copy */}
-            <div className="card-glass p-6 space-y-4">
-              <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-gold-400">Headline & Copy</h2>
-              <Field label="Main Headline" value={form.headline} onChange={(v) => setForm((f) => ({ ...f, headline: v }))} placeholder="Transforming Footage Into Cinematic Stories" />
-              <Field label="Subheadline" value={form.subheadline} onChange={(v) => setForm((f) => ({ ...f, subheadline: v }))} multiline />
+      <PageHeader title="Hero Settings" subtitle="Configure the homepage hero section." />
+      <div className="p-6">
+        {error && <div className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>}
+        {saved && <div className="mb-4 rounded-xl border border-green-500/30 bg-green-500/10 p-3 text-sm text-green-300">Saved successfully!</div>}
+        <div className="card-glass max-w-3xl space-y-5 p-6">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Headline</label>
+            <input type="text" value={form.headline} onChange={(e) => setForm({ ...form, headline: e.target.value })} className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Subheadline</label>
+            <textarea value={form.subheadline} onChange={(e) => setForm({ ...form, subheadline: e.target.value })} rows={2} className="w-full resize-none rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Background Image URL</label>
+            <div className="flex gap-2">
+              <input type="text" value={form.bg_image_url} onChange={(e) => setForm({ ...form, bg_image_url: e.target.value })} className="flex-1 rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-ghost px-4 py-2.5"><Upload className="h-4 w-4" />{uploading ? 'Uploading...' : 'Upload'}</button>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={async (e) => { const file = e.target.files?.[0]; if (file) { try { const url = await uploadImage(file); setForm({ ...form, bg_image_url: url }); } catch (err) { setError(err instanceof Error ? err.message : 'Upload failed'); } } }} />
             </div>
-
-            {/* Background */}
-            <div className="card-glass p-6 space-y-4">
-              <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-gold-400">Background Media</h2>
-              <Toggle
-                label="Use Video Background (instead of image)"
-                checked={form.is_video_enabled}
-                onChange={(v) => setForm((f) => ({ ...f, is_video_enabled: v }))}
-              />
-              <Field label="Background Image URL" value={form.bg_image_url} onChange={(v) => setForm((f) => ({ ...f, bg_image_url: v }))} placeholder="https://..." />
-              {form.bg_image_url && (
-                <img src={form.bg_image_url} alt="Preview" className="h-32 w-full rounded-xl object-cover opacity-60"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-              )}
-              {form.is_video_enabled && (
-                <Field label="Video URL (MP4 hosted URL)" value={form.video_url} onChange={(v) => setForm((f) => ({ ...f, video_url: v }))} placeholder="https://example.com/hero.mp4" />
-              )}
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Video URL</label>
+            <input type="text" value={form.video_url} onChange={(e) => setForm({ ...form, video_url: e.target.value })} className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Primary CTA</label>
+              <input type="text" value={form.cta_primary} onChange={(e) => setForm({ ...form, cta_primary: e.target.value })} className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
             </div>
-
-            {/* CTAs */}
-            <div className="card-glass p-6 space-y-4">
-              <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-gold-400">CTA Button Text</h2>
-              <div className="grid gap-4 sm:grid-cols-3">
-                <Field label="Primary CTA" value={form.cta_primary} onChange={(v) => setForm((f) => ({ ...f, cta_primary: v }))} placeholder="View Portfolio" />
-                <Field label="Secondary CTA" value={form.cta_secondary} onChange={(v) => setForm((f) => ({ ...f, cta_secondary: v }))} placeholder="Get Free Quote" />
-                <Field label="WhatsApp CTA" value={form.cta_whatsapp} onChange={(v) => setForm((f) => ({ ...f, cta_whatsapp: v }))} placeholder="WhatsApp Me" />
-              </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">Secondary CTA</label>
+              <input type="text" value={form.cta_secondary} onChange={(e) => setForm({ ...form, cta_secondary: e.target.value })} className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
             </div>
-
-            {/* Preview link */}
-            <div className="flex justify-end">
-              <a href="/" target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-gold-300 hover:text-gold-100 transition-colors">
-                <Eye className="h-4 w-4" /> Preview live site
-              </a>
+            <div>
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-stone-400">WhatsApp CTA</label>
+              <input type="text" value={form.cta_whatsapp} onChange={(e) => setForm({ ...form, cta_whatsapp: e.target.value })} className="w-full rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100" />
             </div>
-          </>
-        )}
+          </div>
+          <label className="flex items-center gap-2 text-sm text-stone-300">
+            <input type="checkbox" checked={form.is_video_enabled} onChange={(e) => setForm({ ...form, is_video_enabled: e.target.checked })} className="h-4 w-4 rounded border-white/20 bg-ink-900" />
+            Enable video background
+          </label>
+          <button type="button" onClick={save} disabled={saving} className="btn-primary w-full py-3.5"><Save className="h-4 w-4" />{saving ? 'Saving...' : 'Save Hero Settings'}</button>
+        </div>
       </div>
     </div>
   );
