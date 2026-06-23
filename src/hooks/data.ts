@@ -1,19 +1,7 @@
 import { useEffect, useCallback, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import type {
-  Service,
-  PricingTier,
-  PortfolioItem,
-  Testimonial,
-  FaqItem,
-} from '../types/database';
-import {
-  SERVICES as SEED_SERVICES,
-  PRICING as SEED_PRICING,
-  PROJECTS as SEED_PROJECTS,
-  TESTIMONIALS as SEED_TESTIMONIALS,
-  FAQS as SEED_FAQS,
-} from './seed';
+import type { Service, PricingTier, PortfolioItem, Testimonial, FaqItem } from '../types/database';
+import { SERVICES as SEED_SERVICES, PRICING as SEED_PRICING, PROJECTS as SEED_PROJECTS, TESTIMONIALS as SEED_TESTIMONIALS, FAQS as SEED_FAQS } from './seed';
 
 export interface PublicData {
   services: Service[];
@@ -26,13 +14,7 @@ export interface PublicData {
 }
 
 export function usePublicData(): PublicData {
-  const [data, setData] = useState<Omit<PublicData, 'loading' | 'error'>>({
-    services: [],
-    pricing: [],
-    portfolio: [],
-    testimonials: [],
-    faqs: [],
-  });
+  const [data, setData] = useState<Omit<PublicData, 'loading' | 'error'>>({ services: [], pricing: [], portfolio: [], testimonials: [], faqs: [] });
   const [loading, setLoading] = useState(true);
   const [error] = useState<string | null>(null);
 
@@ -40,61 +22,32 @@ export function usePublicData(): PublicData {
     let active = true;
     (async () => {
       const safe = async <T,>(p: PromiseLike<{ data: T[] | null; error: { message: string } | null }>, fallback: T[]): Promise<T[]> => {
-        try {
-          const { data, error } = await p;
-          if (error) return fallback;
-          return (data ?? fallback) as T[];
-        } catch {
-          return fallback;
-        }
+        try { const { data, error } = await p; if (error) return fallback; return (data ?? fallback) as T[]; } catch { return fallback; }
       };
-
       const [services, pricing, portfolio, testimonials, faqs] = await Promise.all([
-        safe(
-          supabase.from('services').select('*').eq('is_published', true).order('display_order'),
-          SEED_SERVICES as unknown as Service[]
-        ),
-        safe(
-          supabase.from('pricing_tiers').select('*').eq('is_published', true).order('display_order'),
-          SEED_PRICING as unknown as PricingTier[]
-        ),
-        safe(
-          supabase.from('portfolio_items').select('*').eq('is_published', true).order('display_order'),
-          SEED_PROJECTS as unknown as PortfolioItem[]
-        ),
-        safe(
-          supabase.from('testimonials').select('*').eq('is_published', true).order('display_order'),
-          SEED_TESTIMONIALS as unknown as Testimonial[]
-        ),
-        safe(
-          supabase.from('faqs').select('*').eq('is_published', true).order('display_order'),
-          SEED_FAQS as unknown as FaqItem[]
-        ),
+        safe(supabase.from('services').select('*').eq('is_published', true).order('display_order'), SEED_SERVICES as unknown as Service[]),
+        safe(supabase.from('pricing_tiers').select('*').eq('is_published', true).order('display_order'), SEED_PRICING as unknown as PricingTier[]),
+        safe(supabase.from('portfolio_items').select('*').eq('is_published', true).order('display_order'), SEED_PROJECTS as unknown as PortfolioItem[]),
+        safe(supabase.from('testimonials').select('*').eq('is_published', true).order('display_order'), SEED_TESTIMONIALS as unknown as Testimonial[]),
+        safe(supabase.from('faqs').select('*').eq('is_published', true).order('display_order'), SEED_FAQS as unknown as FaqItem[]),
       ]);
-
       if (!active) return;
-
       setData({ services, pricing, portfolio, testimonials, faqs });
       setLoading(false);
     })();
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   return { ...data, loading, error };
 }
 
-/** Remove auto-generated fields before insert/update so Postgres can apply defaults. */
 function stripGenerated<T extends Record<string, unknown>>(payload: Partial<T>): Partial<T> {
-  const { id, created_at, updated_at, ...rest } = payload as Record<string, unknown>;
+  const { id, ...rest } = payload as Record<string, unknown>;
   if (id !== undefined && id !== '' && id !== null) (rest as Record<string, unknown>).id = id;
   return rest as Partial<T>;
 }
 
-export function useAdminTable<T extends { id: string; display_order?: number }>(
-  table: string
-) {
+export function useAdminTable<T extends { id: string; display_order?: number }>(table: string) {
   const [rows, setRows] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,9 +58,7 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
     try {
       const query = supabase.from(table).select('*');
       const hasOrder = ['services', 'pricing_tiers', 'portfolio_items', 'testimonials', 'faqs'].includes(table);
-      const { data, error: err } = hasOrder
-        ? await query.order('display_order')
-        : await query.order('created_at', { ascending: false });
+      const { data, error: err } = hasOrder ? await query.order('display_order') : await query.order('created_at', { ascending: false });
       if (err) throw err;
       setRows((data ?? []) as T[]);
     } catch (e) {
@@ -117,17 +68,11 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
     }
   }, [table]);
 
-  useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+  useEffect(() => { fetchAll(); }, [fetchAll]);
 
   const create = async (payload: Partial<T>): Promise<T> => {
     const clean = stripGenerated<T>(payload);
-    const { data, error: err } = await supabase
-      .from(table)
-      .insert(clean)
-      .select()
-      .maybeSingle();
+    const { data, error: err } = await supabase.from(table).insert(clean).select().maybeSingle();
     if (err) throw err;
     if (!data) throw new Error('Failed to create record — check RLS permissions.');
     await fetchAll();
@@ -136,12 +81,7 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
 
   const update = async (id: string, patch: Partial<T>): Promise<T> => {
     const clean = stripGenerated<T>(patch);
-    const { data, error: err } = await supabase
-      .from(table)
-      .update({ ...clean, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select()
-      .maybeSingle();
+    const { data, error: err } = await supabase.from(table).update({ ...clean, updated_at: new Date().toISOString() }).eq('id', id).select().maybeSingle();
     if (err) throw err;
     if (!data) throw new Error('Record not found — it may have been deleted.');
     await fetchAll();
@@ -158,30 +98,12 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
 }
 
 export function useActivityLog() {
-  const log = useCallback(
-    async (
-      action: string,
-      entity: string,
-      entityId?: string,
-      details?: Record<string, unknown>
-    ) => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-        if (!session) return;
-        await supabase.from('activity_logs').insert({
-          user_id: session.user.id,
-          action,
-          entity,
-          entity_id: entityId ?? null,
-          details: details ?? {},
-        });
-      } catch {
-        // Non-critical — silently ignore log failures
-      }
-    },
-    []
-  );
+  const log = useCallback(async (action: string, entity: string, entityId?: string, details?: Record<string, unknown>) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      await supabase.from('activity_logs').insert({ user_id: session.user.id, action, entity, entity_id: entityId ?? null, details: details ?? {} });
+    } catch { /* Non-critical */ }
+  }, []);
   return log;
 }
