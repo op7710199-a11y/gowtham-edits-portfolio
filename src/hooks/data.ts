@@ -127,8 +127,9 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
       .from(table)
       .insert(clean)
       .select()
-      .single();
+      .maybeSingle();
     if (err) throw err;
+    if (!data) throw new Error('Failed to create record — check RLS permissions.');
     await fetchAll();
     return data as T;
   };
@@ -140,8 +141,9 @@ export function useAdminTable<T extends { id: string; display_order?: number }>(
       .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     if (err) throw err;
+    if (!data) throw new Error('Record not found — it may have been deleted.');
     await fetchAll();
     return data as T;
   };

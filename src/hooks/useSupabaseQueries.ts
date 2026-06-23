@@ -53,7 +53,13 @@ export const queryKeys = {
 export function useAboutSettings(): UseQueryResult<AboutSettings | null> {
   return useQuery({
     queryKey: queryKeys.about,
-    queryFn: () => aboutService.getPublic(),
+    queryFn: async () => {
+      try {
+        return await aboutService.getPublic();
+      } catch {
+        return null;
+      }
+    },
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });
@@ -137,7 +143,13 @@ export function useFAQs(): UseQueryResult<FaqItem[]> {
 export function useHeroSettings(): UseQueryResult<HeroSettings | null> {
   return useQuery({
     queryKey: queryKeys.hero,
-    queryFn: () => heroService.get(),
+    queryFn: async () => {
+      try {
+        return await heroService.get();
+      } catch {
+        return null;
+      }
+    },
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });
@@ -146,7 +158,13 @@ export function useHeroSettings(): UseQueryResult<HeroSettings | null> {
 export function useStats(): UseQueryResult<Stat[]> {
   return useQuery({
     queryKey: queryKeys.stats,
-    queryFn: () => statsService.getPublished(),
+    queryFn: async () => {
+      try {
+        return await statsService.getPublished();
+      } catch {
+        return [];
+      }
+    },
     staleTime: 5 * 60 * 1000,
     retry: 2,
   });
@@ -155,7 +173,13 @@ export function useStats(): UseQueryResult<Stat[]> {
 export function useSiteSettings(): UseQueryResult<Record<string, unknown>> {
   return useQuery({
     queryKey: queryKeys.siteSettings,
-    queryFn: () => siteSettingsService.getAll(),
+    queryFn: async () => {
+      try {
+        return await siteSettingsService.getAll();
+      } catch {
+        return {};
+      }
+    },
     staleTime: 10 * 60 * 1000,
     retry: 2,
   });
@@ -164,7 +188,13 @@ export function useSiteSettings(): UseQueryResult<Record<string, unknown>> {
 export function useLogoUrl(): UseQueryResult<string> {
   return useQuery({
     queryKey: queryKeys.logo,
-    queryFn: () => siteSettingsService.getLogoUrl(),
+    queryFn: async () => {
+      try {
+        return await siteSettingsService.getLogoUrl();
+      } catch {
+        return '';
+      }
+    },
     staleTime: 10 * 60 * 1000,
     retry: 2,
   });

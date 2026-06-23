@@ -41,16 +41,18 @@ export const aboutService = {
         .update({ ...rest, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('About settings row not found — it may have been deleted.');
       return data as AboutSettings;
     }
     const { data, error } = await supabase
       .from('about_settings')
       .insert(rest)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Failed to create about settings row.');
     return data as AboutSettings;
   },
 };
@@ -83,8 +85,9 @@ export const servicesService = {
       .from('services')
       .insert(clean)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Failed to create service.');
     return data as Service;
   },
 
@@ -95,8 +98,9 @@ export const servicesService = {
       .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Service not found — it may have been deleted.');
     return data as Service;
   },
 
@@ -134,9 +138,10 @@ export const pricingService = {
       .from('pricing_tiers')
       .insert(clean)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
-    return data as PricingTier[] as PricingTier;
+    if (!data) throw new Error('Failed to create pricing tier.');
+    return data as PricingTier;
   },
 
   async update(id: string, patch: Partial<PricingTier>): Promise<PricingTier> {
@@ -146,8 +151,9 @@ export const pricingService = {
       .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Pricing tier not found — it may have been deleted.');
     return data as PricingTier;
   },
 
@@ -185,8 +191,9 @@ export const portfolioService = {
       .from('portfolio_items')
       .insert(clean)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Failed to create portfolio item.');
     return data as PortfolioItem;
   },
 
@@ -197,8 +204,9 @@ export const portfolioService = {
       .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Portfolio item not found — it may have been deleted.');
     return data as PortfolioItem;
   },
 
@@ -236,8 +244,9 @@ export const testimonialsService = {
       .from('testimonials')
       .insert(clean)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Failed to create testimonial.');
     return data as Testimonial;
   },
 
@@ -248,8 +257,9 @@ export const testimonialsService = {
       .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Testimonial not found — it may have been deleted.');
     return data as Testimonial;
   },
 
@@ -287,8 +297,9 @@ export const faqService = {
       .from('faqs')
       .insert(clean)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Failed to create FAQ.');
     return data as FaqItem;
   },
 
@@ -299,8 +310,9 @@ export const faqService = {
       .update({ ...clean, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('FAQ not found — it may have been deleted.');
     return data as FaqItem;
   },
 
@@ -331,16 +343,18 @@ export const heroService = {
         .update(rest)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Hero settings row not found — it may have been deleted.');
       return data as HeroSettings;
     }
     const { data, error } = await supabase
       .from('hero_settings')
       .insert(rest)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    if (!data) throw new Error('Failed to create hero settings row.');
     return data as HeroSettings;
   },
 };
