@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'admin' | 'editor' | 'user';
+import type { UserRole } from './database';
 
 export interface Profile {
   id: string;
@@ -15,11 +15,11 @@ export interface Profile {
 export interface Service {
   id: string;
   title: string;
-  description: string;
-  icon: string;
+  description: string | null;
+  icon: string | null;
   features: string[];
-  ideal_for: string;
-  delivery_time: string;
+  ideal_for: string | null;
+  delivery_time: string | null;
   display_order: number;
   is_published: boolean;
   created_at: string;
@@ -31,9 +31,9 @@ export interface PricingTier {
   name: string;
   price_label: string;
   period: string;
-  description: string;
+  description: string | null;
   features: string[];
-  delivery_note: string;
+  delivery_note: string | null;
   is_popular: boolean;
   display_order: number;
   is_published: boolean;
@@ -45,9 +45,9 @@ export interface PortfolioItem {
   id: string;
   title: string;
   category: string;
-  description: string;
+  description: string | null;
   thumbnail_url: string;
-  video_url: string;
+  video_url: string | null;
   tags: string[];
   is_featured: boolean;
   is_published: boolean;
@@ -59,8 +59,8 @@ export interface PortfolioItem {
 export interface Testimonial {
   id: string;
   client_name: string;
-  client_role: string;
-  avatar_url: string;
+  client_role: string | null;
+  avatar_url: string | null;
   rating: number;
   content: string;
   display_order: number;
@@ -79,51 +79,6 @@ export interface FaqItem {
   updated_at: string;
 }
 
-export interface Inquiry {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  service: string;
-  message: string;
-  status: InquiryStatus;
-  notes: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export type InquiryStatus = 'new' | 'contacted' | 'converted' | 'closed';
-
-export interface SiteSetting {
-  id: string;
-  key: string;
-  value: unknown;
-  label: string | null;
-  category: string | null;
-  updated_at: string;
-}
-
-export interface SeoSetting {
-  id: string;
-  page_path: string;
-  meta_title: string;
-  meta_description: string;
-  og_image_url: string;
-  keywords: string[];
-  updated_at: string;
-}
-
-export interface ActivityLog {
-  id: string;
-  user_id: string;
-  action: string;
-  entity: string;
-  entity_id: string | null;
-  details: Record<string, unknown> | null;
-  created_at: string;
-  profile?: Pick<Profile, 'full_name' | 'email' | 'avatar_url'> | null;
-}
-
 export interface AboutSettings {
   id: string;
   profile_image_url: string;
@@ -137,19 +92,19 @@ export interface AboutSettings {
   whatsapp_url: string;
   cta_text: string;
   is_published: boolean;
-  updated_at: string;
 }
 
 export interface HeroSettings {
   id: string;
   headline: string;
   subheadline: string;
-  video_url: string;
-  bg_image_url: string;
+  video_url: string | null;
+  bg_image_url: string | null;
   cta_primary: string;
   cta_secondary: string;
   cta_whatsapp: string;
   is_video_enabled: boolean;
+  updated_at: string;
 }
 
 export interface Stat {
@@ -157,7 +112,49 @@ export interface Stat {
   label: string;
   value: number;
   suffix: string;
-  icon: string;
+  icon: string | null;
   display_order: number;
   is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type InquiryStatus = 'new' | 'contacted' | 'in_progress' | 'converted' | 'closed';
+
+export interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  service: string | null;
+  message: string;
+  status: InquiryStatus;
+  created_at: string;
+  notes: string | null;
+  updated_at: string;
+  whatsapp: string | null;
+  project_type: string | null;
+  budget_range: string | null;
+  delivery_deadline: string | null;
+  source: string | null;
+}
+
+export interface ActivityLog {
+  id: string;
+  user_id: string | null;
+  action: string;
+  entity: string;
+  entity_id: string | null;
+  details: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface SeoSettings {
+  id: string;
+  page_path: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  og_image_url: string | null;
+  keywords: string[];
+  updated_at: string;
 }
