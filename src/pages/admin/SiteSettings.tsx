@@ -24,10 +24,25 @@ export function SiteSettingsPage() {
   const log = useActivityLog();
 
   useEffect(() => {
-    supabase.from('site_settings').select('*').order('category').then(({ data }) => {
-      setSettings((data ?? []) as SiteSetting[]);
-      setLoading(false);
-    });
+    let active = true;
+    (async () => {
+      try {
+        const { data, error: err } = await supabase.from('site_settings').select('*').order('category');
+        if (!active) return;
+        if (err) {
+          setError('Failed to load settings: ' + err.message);
+          setLoading(false);
+          return;
+        }
+        setSettings((data ?? []) as SiteSetting[]);
+        setLoading(false);
+      } catch {
+        if (!active) return;
+        setError('Failed to load settings. Please refresh the page.');
+        setLoading(false);
+      }
+    })();
+    return () => { active = false; };
   }, []);
 
   const getValue = (s: SiteSetting) => {
@@ -49,9 +64,13 @@ export function SiteSettingsPage() {
         if (typeof orig === 'number') value = Number(rawVal);
         else if (typeof orig === 'boolean') value = rawVal === 'true';
         else value = rawVal;
-        await supabase.from('site_settings').update({ value: value as never, updated_at: new Date().toISOString() }).eq('key', key);
+        const { error: updErr } = await supabase
+          .from('site_settings')
+          .update({ value: JSON.stringify(value), updated_at: new Date().toISOString() })
+          .eq('key', key);
+        if (updErr) throw new Error(`Failed to save "${key}": ${updErr.message}`);
       }
-      await log('update', 'site_settings', undefined, { keys: Object.keys(edited) });
+      try { await log('update', 'site_settings', undefined, { keys: Object.keys(edited) }); } catch { /* non-critical */ }
       setSaved(true);
       setEdited({});
       setTimeout(() => setSaved(false), 2500);
