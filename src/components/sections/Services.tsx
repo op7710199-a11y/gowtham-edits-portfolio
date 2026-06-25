@@ -8,15 +8,16 @@ interface Props { services: Service[]; }
 
 export function Services({ services }: Props) {
   const items = Array.isArray(services) ? services : [];
+  if (items.length === 0) return null;
   return (
     <section id="services" className="section-padding relative overflow-hidden">
       <div className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[50vh] w-[50vh] -translate-x-1/2 rounded-full bg-gold-500/8 blur-[120px]" />
       <div className="container-mx">
-        <SectionHeading eyebrow="Services" title={<>Every edit, <span className="text-gradient-gold">cinematic</span></>}
-          subtitle="Nine focused services — pick one, or bundle for a full-event package. Every project includes the GOWTHAM EDITS signature finish." />
-        {items.length === 0 ? (
-          <p className="mt-10 text-center text-sm text-stone-500">Services are being updated. Please check back soon.</p>
-        ) : (
+        <SectionHeading
+          eyebrow="Services"
+          title={<>Every edit, <span className="text-gradient-gold">cinematic</span></>}
+          subtitle="Nine focused services — pick one, or bundle for a full-event package. Every project includes the GOWTHAM EDITS signature finish."
+        />
         <RevealScope className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((s, i) => (
             <Reveal key={s.id ?? i} delay={(i % 3) * 90} as="article">
@@ -54,7 +55,6 @@ export function Services({ services }: Props) {
             </Reveal>
           ))}
         </RevealScope>
-        )}
       </div>
     </section>
   );

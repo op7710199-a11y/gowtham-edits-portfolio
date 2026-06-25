@@ -8,14 +8,15 @@ interface Props { faqs: FaqItem[]; }
 export function FAQ({ faqs }: Props) {
   const items = Array.isArray(faqs) ? faqs : [];
   const [open, setOpen] = useState<number | null>(0);
+  if (items.length === 0) return null;
   return (
     <section id="faq" className="section-padding relative">
       <div className="container-mx">
-        <SectionHeading eyebrow="FAQ" title={<>Questions, <span className="text-gradient-gold">answered</span></>}
-          subtitle="Everything you need to know before sending over footage." />
-        {items.length === 0 ? (
-          <p className="mt-12 text-center text-sm text-stone-500">FAQs are being updated. Please check back soon.</p>
-        ) : (
+        <SectionHeading
+          eyebrow="FAQ"
+          title={<>Questions, <span className="text-gradient-gold">answered</span></>}
+          subtitle="Everything you need to know before sending over footage."
+        />
         <RevealScope className="mx-auto mt-12 max-w-3xl">
           <div className="space-y-3">
             {items.map((item, i) => {
@@ -41,9 +42,12 @@ export function FAQ({ faqs }: Props) {
             })}
           </div>
         </RevealScope>
-        )}
         <Reveal className="mt-10 text-center">
-          <p className="text-sm text-stone-400">Still unsure?{' '}<a href="#contact" className="font-medium text-gold-300 underline-offset-4 hover:underline">Drop me a message</a>{' '}— usually replies within a few hours.</p>
+          <p className="text-sm text-stone-400">
+            Still unsure?{' '}
+            <a href="#contact" className="font-medium text-gold-300 underline-offset-4 hover:underline">Drop me a message</a>
+            {' '}— usually replies within a few hours.
+          </p>
         </Reveal>
       </div>
     </section>
