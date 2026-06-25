@@ -43,11 +43,13 @@ export function StatsManager() {
     if (!deleteTarget) return;
     setDeleting(true);
     try { await remove(deleteTarget.id); await log('delete', 'stat', deleteTarget.id); setDeleteTarget(null); }
+    catch (e) { console.error('StatsManager delete error:', e); setFormError(e instanceof Error ? e.message : 'Delete failed'); }
     finally { setDeleting(false); }
   };
 
   const togglePublish = async (row: StatRow) => {
-    await update(row.id, { is_published: !row.is_published });
+    try { await update(row.id, { is_published: !row.is_published }); }
+    catch (e) { console.error('StatsManager togglePublish error:', e); setFormError(e instanceof Error ? e.message : 'Publish toggle failed'); }
   };
 
   return (
@@ -62,7 +64,7 @@ export function StatsManager() {
           emptyMessage="No statistics yet."
           columns={[
             { key: 'label', label: 'Label', sortable: true, render: (r) => <span className="text-sm font-medium text-white">{r.label}</span> },
-            { key: 'value', label: 'Value', render: (r) => <span className="font-display text-2xl font-bold text-gradient-gold">{r.value}{r.suffix}</span> },
+            { key: 'value', label: 'Value', render: (r) => <span className="font-display text-2xl font-bold text-gradient-gold">{r.value ?? 0}{r.suffix ?? ''}</span> },
             { key: 'display_order', label: 'Order', render: (r) => <span className="flex items-center gap-1 text-xs text-stone-400"><GripVertical className="h-3 w-3" />{r.display_order}</span> },
             { key: 'is_published', label: 'Status', render: (r) => <StatusBadge value={r.is_published} /> },
           ]}

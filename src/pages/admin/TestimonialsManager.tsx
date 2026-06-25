@@ -46,11 +46,13 @@ export function TestimonialsManager() {
     if (!deleteTarget) return;
     setDeleting(true);
     try { await remove(deleteTarget.id); await log('delete', 'testimonial', deleteTarget.id); setDeleteTarget(null); }
+    catch (e) { console.error('TestimonialsManager delete error:', e); setFormError(e instanceof Error ? e.message : 'Delete failed'); }
     finally { setDeleting(false); }
   };
 
   const togglePublish = async (row: Testimonial) => {
-    await update(row.id, { is_published: !row.is_published });
+    try { await update(row.id, { is_published: !row.is_published }); }
+    catch (e) { console.error('TestimonialsManager togglePublish error:', e); setFormError(e instanceof Error ? e.message : 'Publish toggle failed'); }
   };
 
   return (
@@ -64,7 +66,7 @@ export function TestimonialsManager() {
           onEdit={openEdit} onDelete={(r) => setDeleteTarget(r)} onTogglePublish={togglePublish}
           emptyMessage="No testimonials yet."
           columns={[
-            { key: 'avatar_url', label: 'Avatar', width: '56px', render: (r) => r.avatar_url ? <img src={r.avatar_url} alt={r.client_name} className="h-10 w-10 rounded-full object-cover" loading="lazy" /> : <div className="h-10 w-10 rounded-full bg-ink-800 grid place-items-center text-xs text-stone-400">{r.client_name[0]}</div> },
+            { key: 'avatar_url', label: 'Avatar', width: '56px', render: (r) => r.avatar_url ? <img src={r.avatar_url} alt={r.client_name ?? ''} className="h-10 w-10 rounded-full object-cover" loading="lazy" /> : <div className="h-10 w-10 rounded-full bg-ink-800 grid place-items-center text-xs text-stone-400">{(r.client_name ?? '?')[0] ?? '?'}</div> },
             { key: 'client_name', label: 'Client', sortable: true, render: (r) => (<div><div className="text-sm font-medium text-white">{r.client_name}</div><div className="text-xs text-stone-400">{r.client_role}</div></div>) },
             { key: 'rating', label: 'Rating', render: (r) => (<div className="flex gap-0.5 text-gold-400">{Array.from({ length: r.rating }).map((_, i) => <Star key={i} className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />)}</div>) },
             { key: 'content', label: 'Review', render: (r) => <span className="line-clamp-2 text-xs text-stone-300">{r.content}</span> },
@@ -84,7 +86,10 @@ export function TestimonialsManager() {
             <label className="text-xs font-medium uppercase tracking-[0.15em] text-stone-400">Rating</label>
             <div className="flex items-center gap-1">
               {[1,2,3,4,5].map((n) => (
-                <button key={n} type="button" onClick={() => setForm((f) => ({ ...f, rating: n }))} className={`text-2xl ${(form.rating ?? 5) >= n ? 'text-gold-400' : 'text-stone-600'}`}>★</button>
+                <button key={n} type="button" onClick={() => setForm((f) => ({ ...f, rating: n }))}
+                  className={`text-2xl ${(form.rating ?? 5) >= n ? 'text-gold-400' : 'text-stone-600'}`}>
+                  ★
+                </button>
               ))}
               <span className="ml-2 text-sm text-stone-400">{form.rating}/5</span>
             </div>
