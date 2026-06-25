@@ -9,7 +9,9 @@ type ViewMode = 'cards' | 'table';
 
 export function Pricing({ pricing }: Props) {
   const [mode, setMode] = useState<ViewMode>('cards');
+  const items = Array.isArray(pricing) ? pricing : [];
 
+  if (items.length === 0) return null;
   return (
     <section id="pricing" className="section-padding relative overflow-hidden">
       <div className="pointer-events-none absolute right-0 top-1/3 -z-10 h-[45vh] w-[45vh] rounded-full bg-gold-500/10 blur-[110px]" />
@@ -36,8 +38,8 @@ export function Pricing({ pricing }: Props) {
 
         {mode === 'cards' ? (
           <RevealScope className="mt-12 grid gap-6 lg:grid-cols-3">
-            {pricing.map((tier, i) => (
-              <Reveal key={tier.id} delay={i * 120} as="article">
+            {items.map((tier, i) => (
+              <Reveal key={tier.id ?? i} delay={i * 120} as="article">
                 <div className={`relative h-full overflow-hidden rounded-3xl p-7 sm:p-8 transition-all duration-500 hover:-translate-y-1 ${
                   tier.is_popular
                     ? 'glass-gold border-gold-500/40 shadow-gold-glow'
@@ -51,10 +53,10 @@ export function Pricing({ pricing }: Props) {
                       </span>
                     </>
                   )}
-                  <h3 className="font-display text-2xl font-bold text-white">{tier.name}</h3>
+                  <h3 className="font-display text-2xl font-bold text-white">{tier.name ?? ''}</h3>
                   <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-display text-5xl font-bold text-gradient-gold">{tier.price_label}</span>
-                    <span className="text-sm text-stone-400">/ {tier.period}</span>
+                    <span className="font-display text-5xl font-bold text-gradient-gold">{tier.price_label ?? ''}</span>
+                    <span className="text-sm text-stone-400">/ {tier.period ?? ''}</span>
                   </div>
                   <p className="mt-3 text-sm text-stone-400">
                     <span className="text-stone-300">Best for:</span> {tier.description ?? ''}
@@ -98,19 +100,19 @@ export function Pricing({ pricing }: Props) {
                   {pricing.map((tier) => (
                     <th key={tier.id} className="pb-4 text-center">
                       <div className={`inline-flex flex-col items-center gap-1 rounded-2xl px-4 py-3 ${tier.is_popular ? 'bg-gold-gradient text-ink-950' : 'border border-white/10 text-white'}`}>
-                        <span className="font-display text-sm font-bold">{tier.name}</span>
-                        <span className="text-xs opacity-80">{tier.price_label}</span>
+                        <span className="font-display text-sm font-bold">{tier.name ?? ''}</span>
+                        <span className="text-xs opacity-80">{tier.price_label ?? ''}</span>
                       </div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.05]">
-                {/* Collect all unique features */}
-                {Array.from(new Set(pricing.flatMap((t) => t.features ?? []))).map((feature) => (
+                {/* Collect all unique features */
+                {Array.from(new Set(items.flatMap((t) => t.features ?? []))).map((feature) => (
                   <tr key={feature} className="group hover:bg-white/[0.02]">
                     <td className="py-3.5 pr-6 text-sm text-stone-300">{feature}</td>
-                    {pricing.map((tier) => (
+                    {items.map((tier) => (
                       <td key={tier.id} className="py-3.5 text-center">
                         {(tier.features ?? []).includes(feature)
                           ? <CheckCircle2 className="inline h-5 w-5 text-gold-400" />
@@ -124,7 +126,7 @@ export function Pricing({ pricing }: Props) {
               <tfoot>
                 <tr>
                   <td />
-                  {pricing.map((tier) => (
+                  {items.map((tier) => (
                     <td key={tier.id} className="pt-6 text-center">
                       <a href="#contact"
                         className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold transition-all ${

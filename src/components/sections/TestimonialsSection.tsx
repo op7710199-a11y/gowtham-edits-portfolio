@@ -12,11 +12,12 @@ const IMPACT = [
 interface Props { testimonials: Testimonial[]; }
 
 export function TestimonialsSection({ testimonials }: Props) {
+  const safeTestimonials = Array.isArray(testimonials) ? testimonials : [];
   const [current, setCurrent] = useState(0);
   const [videoOpen, setVideoOpen] = useState<string | null>(null);
   const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const total = testimonials.length;
+  const total = safeTestimonials.length;
 
   const go = (dir: number) => {
     if (total === 0) return;
@@ -30,9 +31,9 @@ export function TestimonialsSection({ testimonials }: Props) {
     return () => { if (autoRef.current) clearInterval(autoRef.current); };
   }, [total]);
 
-  if (testimonials.length === 0) return null;
+  if (safeTestimonials.length === 0) return null;
 
-  const active = testimonials[current];
+  const active = safeTestimonials[current];
 
   return (
     <section id="testimonials" className="section-padding relative overflow-hidden">
@@ -53,28 +54,31 @@ export function TestimonialsSection({ testimonials }: Props) {
             <div className="relative grid gap-8 lg:grid-cols-[1fr_auto]">
               <div>
                 {/* Stars */}
-                <div className="flex gap-1" aria-label={`${active.rating} out of 5`}>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className={`h-5 w-5 ${i < active.rating ? 'text-gold-400' : 'text-stone-700'}`}
-                      fill={i < active.rating ? 'currentColor' : 'none'} strokeWidth={i < active.rating ? 0 : 1.5} />
-                  ))}
+                <div className="flex gap-1" aria-label={`${active.rating ?? 0} out of 5`}>
+                  {Array.from({ length: 5 }).map((_, i) => {
+                    const rating = Math.min(5, Math.max(0, Math.round(active.rating ?? 0)));
+                    return (
+                      <Star key={i} className={`h-5 w-5 ${i < rating ? 'text-gold-400' : 'text-stone-700'}`}
+                        fill={i < rating ? 'currentColor' : 'none'} strokeWidth={i < rating ? 0 : 1.5} />
+                    );
+                  })}
                 </div>
                 {/* Quote */}
                 <blockquote className="mt-5 font-serif text-xl italic leading-relaxed text-stone-100 sm:text-2xl">
-                  "{active.content}"
+                  "{active.content ?? ''}"
                 </blockquote>
                 {/* Client */}
                 <div className="mt-6 flex items-center gap-4">
                   {active.avatar_url ? (
-                    <img src={active.avatar_url} alt={active.client_name}
+                    <img src={active.avatar_url} alt={active.client_name ?? ''}
                       className="h-14 w-14 rounded-full object-cover ring-2 ring-gold-500/40" />
                   ) : (
                     <div className="grid h-14 w-14 place-items-center rounded-full bg-gold-gradient text-xl font-bold text-ink-950">
-                      {active.client_name[0]}
+                      {(active.client_name ?? '?')[0] ?? '?'}
                     </div>
                   )}
                   <div>
-                    <div className="font-display text-lg font-bold text-white">{active.client_name}</div>
+                    <div className="font-display text-lg font-bold text-white">{active.client_name ?? 'Anonymous'}</div>
                     <div className="text-sm text-stone-400">{active.client_role ?? ''}</div>
                   </div>
                 </div>
@@ -100,7 +104,7 @@ export function TestimonialsSection({ testimonials }: Props) {
             {/* Controls */}
             <div className="mt-8 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {testimonials.map((_, i) => (
+                {safeTestimonials.map((_, i) => (
                   <button key={i} type="button" onClick={() => { setCurrent(i); if (autoRef.current) clearInterval(autoRef.current); }}
                     className={`h-1.5 rounded-full transition-all duration-500 ${i === current ? 'w-8 bg-gold-gradient' : 'w-1.5 bg-stone-700 hover:bg-stone-500'}`} />
                 ))}
@@ -120,23 +124,23 @@ export function TestimonialsSection({ testimonials }: Props) {
         </Reveal>
 
         {/* ── Mini cards ── */}
-        {testimonials.length > 1 && (
+        {safeTestimonials.length > 1 && (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {testimonials.slice(0, 3).map((t, i) => (
+            {safeTestimonials.slice(0, 3).map((t, i) => (
               <Reveal key={t.id} delay={i * 80}>
                 <button type="button" onClick={() => { setCurrent(i); if (autoRef.current) clearInterval(autoRef.current); }}
                   className={`w-full rounded-2xl border p-5 text-left transition-all duration-300 hover:-translate-y-1 ${
                     i === current ? 'border-gold-500/30 bg-gold-500/[0.06]' : 'border-white/[0.06] bg-white/[0.02] hover:border-gold-500/20'
                   }`}>
                   <div className="flex gap-0.5 text-gold-400">
-                    {Array.from({ length: t.rating }).map((_, k) => (
+                    {Array.from({ length: Math.round(t.rating ?? 0) }).map((_, k) => (
                       <Star key={k} className="h-3.5 w-3.5" fill="currentColor" strokeWidth={0} />
                     ))}
                   </div>
-                  <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-stone-300">"{t.content}"</p>
+                  <p className="mt-3 line-clamp-3 text-xs leading-relaxed text-stone-300">"{t.content ?? ''}"</p>
                   <div className="mt-3 flex items-center gap-2">
-                    {t.avatar_url && <img src={t.avatar_url} alt={t.client_name} className="h-7 w-7 rounded-full object-cover ring-1 ring-gold-500/30" />}
-                    <span className="text-xs font-semibold text-white">{t.client_name}</span>
+                    {t.avatar_url && <img src={t.avatar_url} alt={t.client_name ?? ''} className="h-7 w-7 rounded-full object-cover ring-1 ring-gold-500/30" />}
+                    <span className="text-xs font-semibold text-white">{t.client_name ?? 'Anonymous'}</span>
                   </div>
                 </button>
               </Reveal>
@@ -179,7 +183,7 @@ export function TestimonialsSection({ testimonials }: Props) {
               <ChevronLeft className="h-5 w-5 rotate-180" />
             </button>
             <div className="overflow-hidden rounded-2xl bg-ink-900 aspect-[9/16]">
-              <div className="grid h-full place-items-center text-stone-400 text-sm">Video testimonial coming soon</div>
+              <div className="grid h-full place-items-center text-stone-400 text-sm">Video not available</div>
             </div>
           </div>
         </div>

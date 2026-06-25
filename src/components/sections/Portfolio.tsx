@@ -53,6 +53,7 @@ function BeforeAfterSlider({ before, after }: { before: string; after: string })
 }
 
 export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Props) {
+  const items = Array.isArray(portfolio) ? portfolio : [];
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -79,13 +80,13 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
   }, [activeId]);
 
   const presentCategories = useMemo(() => {
-    const cats = new Set(portfolio.map((p) => p.category));
+    const cats = new Set(items.map((p) => p.category).filter(Boolean));
     return ['All', ...ALL_CATEGORIES.filter((c) => cats.has(c)), ...Array.from(cats).filter((c) => !ALL_CATEGORIES.includes(c))];
-  }, [portfolio]);
+  }, [items]);
 
   const filtered = useMemo(
-    () => (activeCategory === 'All' ? portfolio : portfolio.filter((p) => p.category === activeCategory)),
-    [activeCategory, portfolio]
+    () => (activeCategory === 'All' ? items : items.filter((p) => p.category === activeCategory)),
+    [activeCategory, items]
   );
 
   const activeIndex = useMemo(() => filtered.findIndex((p) => p.id === activeId), [activeId, filtered]);
@@ -93,7 +94,7 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
     if (!filtered.length) return;
     selectProject(filtered[(activeIndex + dir + filtered.length) % filtered.length].id);
   };
-  const activeProject = activeId ? portfolio.find((p) => p.id === activeId) : null;
+  const activeProject = activeId ? items.find((p) => p.id === activeId) : null;
 
   return (
     <section id="portfolio" className="section-padding relative overflow-hidden">
@@ -124,7 +125,7 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
         {/* Masonry-style gallery */}
         <RevealScope className="mt-12 columns-1 gap-4 sm:columns-2 lg:columns-3">
           {filtered.map((p, i) => (
-            <Reveal key={p.id} delay={(i % 3) * 80}>
+            <Reveal key={p.id ?? i} delay={(i % 3) * 80}>
               <button
                 type="button"
                 onClick={() => selectProject(p.id)}
@@ -133,8 +134,8 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
                 }`}
               >
                 <img
-                  src={p.thumbnail_url}
-                  alt={p.title}
+                  src={p.thumbnail_url || ''}
+                  alt={p.title ?? ''}
                   loading="lazy"
                   className="h-full w-full object-cover transition-transform duration-[1200ms] ease-cinematic group-hover:scale-110"
                 />
@@ -146,8 +147,8 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
                   </span>
                 </div>
                 <div className="absolute inset-x-0 bottom-0 p-5">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-gold-300">{p.category}</span>
-                  <h3 className="mt-1 font-display text-base font-semibold text-white leading-snug">{p.title}</h3>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-gold-300">{p.category ?? ''}</span>
+                  <h3 className="mt-1 font-display text-base font-semibold text-white leading-snug">{p.title ?? ''}</h3>
                 </div>
                 {p.is_featured && (
                   <span className="absolute left-3 top-3 rounded-full bg-gold-gradient px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide text-ink-950">
@@ -161,15 +162,11 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
             </Reveal>
           ))}
         </RevealScope>
-
-        {filtered.length === 0 && (
-          <div className="mt-16 text-center text-stone-400">No projects in this category yet.</div>
-        )}
       </div>
 
       {/* ── Lightbox ── */}
       {activeProject && (
-        <div role="dialog" aria-modal="true" aria-label={`Preview: ${activeProject.title}`}
+        <div role="dialog" aria-modal="true" aria-label={`Preview: ${activeProject.title ?? 'Project'}`}
           className="fixed inset-0 z-[70] grid place-items-center p-4 sm:p-8">
           <div className="absolute inset-0 bg-ink-950/95 backdrop-blur-xl animate-fade-in" onClick={() => selectProject(null)} />
           <div className="relative z-10 w-full max-w-4xl animate-scale-in">
@@ -190,12 +187,12 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
                     controls
                     autoPlay
                     className="h-full w-full"
-                    poster={activeProject.thumbnail_url}
+                    poster={activeProject.thumbnail_url || ''}
                   />
                 </div>
               ) : (
                 <div className="relative aspect-video">
-                  <img src={activeProject.thumbnail_url} alt={activeProject.title} className="h-full w-full object-cover" />
+                  <img src={activeProject.thumbnail_url || ''} alt={activeProject.title ?? ''} className="h-full w-full object-cover" />
                   <div className="absolute inset-0 grid place-items-center bg-ink-950/30">
                     <div className="grid h-20 w-20 place-items-center rounded-full border border-white/40 bg-white/10 backdrop-blur-md">
                       <Play className="h-8 w-8 translate-x-0.5 text-white" fill="currentColor" />
@@ -205,20 +202,20 @@ export function Portfolio({ portfolio, externalActiveId, onActiveIdChange }: Pro
               )}
 
               {/* Before/After demo */}
-              {activeProject.description && activeProject.description.includes('before:') && (
+              {(activeProject.description ?? '').includes('before:') && (
                 <div className="p-4">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-gold-400">Before / After</p>
                   <BeforeAfterSlider
-                    before={activeProject.thumbnail_url}
-                    after={activeProject.thumbnail_url}
+                    before={activeProject.thumbnail_url || ''}
+                    after={activeProject.thumbnail_url || ''}
                   />
                 </div>
               )}
 
               <div className="flex items-center justify-between gap-4 p-5 sm:p-6">
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-gold-300">{activeProject.category}</span>
-                  <h3 className="mt-1 font-display text-xl font-bold text-white sm:text-2xl">{activeProject.title}</h3>
+                  <span className="text-xs font-semibold uppercase tracking-[0.25em] text-gold-300">{activeProject.category ?? ''}</span>
+                  <h3 className="mt-1 font-display text-xl font-bold text-white sm:text-2xl">{activeProject.title ?? ''}</h3>
                   {activeProject.description && (
                     <p className="mt-1 text-sm text-stone-400 line-clamp-2">{activeProject.description}</p>
                   )}
