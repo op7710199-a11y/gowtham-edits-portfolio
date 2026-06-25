@@ -38,55 +38,30 @@ export function LogoManager() {
     } finally {
       setUploading(false);
     }
-  };const handleSave = async () => {
-  if (!previewUrl) {
-    setError("Upload a logo first.");
-    return;
-  }
+  };
 
-  setSaving(true);
-  setError(null);
-
-  try {
-    const { data: settings, error: fetchError } = await supabase
-      .from("site_settings")
-      .select("id")
-      .limit(1)
-      .single();
-
-    if (fetchError) throw fetchError;
-    if (!settings) throw new Error("No site_settings row found.");
-
-    const { error: updateError } = await supabase
-      .from("site_settings")
-      .update({
-        value: previewUrl
-      })
-      .eq("id", settings.id);
-
-    if (updateError) throw updateError;
-
-    setLogoUrl(previewUrl);
-    setPreviewUrl(null);
-
+  const handleSave = async () => {
+    if (!previewUrl) { setError('Upload a logo first.'); return; }
+    setSaving(true);
+    setError(null);
     try {
-      await log("update", "site_settings", settings.id);
-    } catch {
-      // Ignore activity log errors
+      const { error: err } = await supabase
+        .from('site_settings')
+        .update({ value: JSON.stringify(previewUrl), updated_at: new Date().toISOString() })
+        .eq('key', 'logo_url');
+      if (err) throw err;
+      setLogoUrl(previewUrl);
+      setPreviewUrl(null);
+      await log('update', 'site_settings', undefined, { key: 'logo_url' });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error('LogoManager save error:', err);
+      setError(err instanceof Error ? err.message : 'Save failed');
+    } finally {
+      setSaving(false);
     }
-
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-
-  } catch (err) {
-    console.error(err);
-    setError(err instanceof Error ? err.message : "Save failed");
-  } finally {
-    setSaving(false);
-  }
-};
-
-  
+  };
 
   return (
     <div>

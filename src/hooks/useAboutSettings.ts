@@ -46,19 +46,10 @@ export function useAboutSettings() {
         if (!active) return;
         if (error) return;
         if (data) {
-          const parsed = data as Partial<AboutSettings> & { skills?: unknown };
+          const parsed = data as AboutSettings & { skills?: unknown };
           setAbout({
             ...DEFAULT_ABOUT,
             ...parsed,
-            profile_image_url: parsed.profile_image_url ?? '',
-            name: parsed.name ?? DEFAULT_ABOUT.name,
-            title: parsed.title ?? DEFAULT_ABOUT.title,
-            bio: parsed.bio ?? DEFAULT_ABOUT.bio,
-            quote: parsed.quote ?? DEFAULT_ABOUT.quote,
-            quote_author: parsed.quote_author ?? DEFAULT_ABOUT.quote_author,
-            instagram_url: parsed.instagram_url ?? '',
-            whatsapp_url: parsed.whatsapp_url ?? '',
-            cta_text: parsed.cta_text ?? DEFAULT_ABOUT.cta_text,
             skills: Array.isArray(parsed.skills) ? (parsed.skills as string[]) : DEFAULT_ABOUT.skills,
           });
         }
@@ -87,22 +78,19 @@ export function useAboutAdmin() {
     let active = true;
     (async () => {
       try {
-        const { data } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
+        const { data, error: qErr } = await supabase.from(ABOUT_TABLE).select('*').limit(1).maybeSingle();
         if (!active) return;
+        if (qErr) {
+          console.error('useAboutSettings admin load error:', qErr.message);
+          setError('Failed to load about settings: ' + qErr.message);
+          setLoading(false);
+          return;
+        }
         if (data) {
-          const parsed = data as Partial<AboutSettings> & { skills?: unknown };
+          const parsed = data as AboutSettings & { skills?: unknown };
           setForm({
             ...DEFAULT_ABOUT,
             ...parsed,
-            profile_image_url: parsed.profile_image_url ?? '',
-            name: parsed.name ?? DEFAULT_ABOUT.name,
-            title: parsed.title ?? DEFAULT_ABOUT.title,
-            bio: parsed.bio ?? DEFAULT_ABOUT.bio,
-            quote: parsed.quote ?? DEFAULT_ABOUT.quote,
-            quote_author: parsed.quote_author ?? DEFAULT_ABOUT.quote_author,
-            instagram_url: parsed.instagram_url ?? '',
-            whatsapp_url: parsed.whatsapp_url ?? '',
-            cta_text: parsed.cta_text ?? DEFAULT_ABOUT.cta_text,
             skills: Array.isArray(parsed.skills) ? (parsed.skills as string[]) : [],
           });
         }
@@ -139,34 +127,28 @@ export function useAboutAdmin() {
     setSaving(true);
     setError(null);
     try {
-      const { id, ...rest } = form;
+      const { id: formId, ...rest } = form;
       const payload = {
         ...rest,
         profile_image_url: imageOverrideUrl ?? form.profile_image_url,
         updated_at: new Date().toISOString(),
       };
 
-      if (form.id) {
-        const { error: err } = await supabase.from(ABOUT_TABLE).update(payload).eq('id', form.id);
+      if (formId) {
+        const { error: err } = await supabase.from(ABOUT_TABLE).update(payload).eq('id', formId);
         if (err) throw err;
         setForm((f) => ({ ...f, profile_image_url: payload.profile_image_url }));
       } else {
         const { data, error: err } = await supabase.from(ABOUT_TABLE).insert(payload).select().maybeSingle();
         if (err) throw err;
-        if (data) {
-          const d = data as Partial<AboutSettings> & { skills?: unknown };
-          setForm({
-            ...DEFAULT_ABOUT,
-            ...d,
-            skills: Array.isArray(d.skills) ? (d.skills as string[]) : [],
-          });
-        }
+        if (data) setForm({ ...(data as AboutSettings), skills: Array.isArray((data as AboutSettings).skills) ? (data as AboutSettings).skills : [] });
       }
 
-      try { await log('update', 'about_settings', form.id || undefined); } catch { /* non-critical */ }
+      try { await log('update', 'about_settings', formId || undefined); } catch { /* non-critical */ }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e) {
+      console.error('useAboutAdmin save error:', e);
       setError(e instanceof Error ? e.message : 'Save failed');
     } finally {
       setSaving(false);

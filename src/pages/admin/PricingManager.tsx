@@ -56,6 +56,7 @@ export function PricingManager() {
     if (!deleteTarget) return;
     setDeleting(true);
     try { await remove(deleteTarget.id); await log('delete', 'pricing', deleteTarget.id); setDeleteTarget(null); }
+    catch (e) { console.error('PricingManager delete error:', e); setFormError(e instanceof Error ? e.message : 'Delete failed'); }
     finally { setDeleting(false); }
   };
 

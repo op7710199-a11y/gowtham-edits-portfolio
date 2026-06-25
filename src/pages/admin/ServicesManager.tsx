@@ -60,17 +60,25 @@ export function ServicesManager() {
     if (!deleteTarget) return;
     setDeleting(true);
     try { await remove(deleteTarget.id); await log('delete', 'service', deleteTarget.id); setDeleteTarget(null); }
+    catch (e) { console.error('ServicesManager delete error:', e); setFormError(e instanceof Error ? e.message : 'Delete failed'); }
     finally { setDeleting(false); }
   };
 
   const togglePublish = async (row: Service) => {
-    await update(row.id, { is_published: !row.is_published });
+    try { await update(row.id, { is_published: !row.is_published }); }
+    catch (e) { console.error('ServicesManager togglePublish error:', e); setFormError(e instanceof Error ? e.message : 'Publish toggle failed'); }
   };
 
   return (
     <div>
-      <PageHeader title="Services" subtitle="Manage the 9 editing services shown on the public site."
-        action={<button type="button" onClick={openCreate} className="btn-primary py-2.5"><Plus className="h-4 w-4" /> Add Service</button>}
+      <PageHeader
+        title="Services"
+        subtitle="Manage the 9 editing services shown on the public site."
+        action={
+          <button type="button" onClick={openCreate} className="btn-primary py-2.5">
+            <Plus className="h-4 w-4" /> Add Service
+          </button>
+        }
       />
       <div className="p-6">
         <DataTable<Service>
@@ -104,7 +112,7 @@ export function ServicesManager() {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium uppercase tracking-[0.15em] text-stone-400">Features (one per line)</label>
-            <textarea value={featuresText} onChange={(e) => setFeaturesText(e.target.value)} rows={4} placeholder="Full ceremony film\nHighlight trailer\nColor grade" className="w-full resize-none rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none" />
+            <textarea value={featuresText} onChange={(e) => setFeaturesText(e.target.value)} rows={4} placeholder="Full ceremony film&#10;Highlight trailer&#10;Color grade" className="w-full resize-none rounded-xl border border-white/10 bg-ink-900/60 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-gold-500/50 focus:outline-none" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Ideal For" value={form.ideal_for ?? ''} onChange={(v) => setForm((f) => ({ ...f, ideal_for: v }))} />

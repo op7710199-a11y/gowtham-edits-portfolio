@@ -75,6 +75,7 @@ export function SiteSettingsPage() {
       setEdited({});
       setTimeout(() => setSaved(false), 2500);
     } catch (e) {
+      console.error('SiteSettings save error:', e);
       setError(e instanceof Error ? e.message : 'Save failed');
     } finally { setSaving(false); }
   };
