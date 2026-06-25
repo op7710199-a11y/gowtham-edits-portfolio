@@ -130,8 +130,16 @@ export function Footer() {
             © {new Date().getFullYear()} GOWTHAM EDITS. All rights reserved.
           </p>
           <p className="flex items-center gap-1.5 text-xs text-stone-500">
-            Crafted By <Heart className="h-3.5 w-3.5 text-gold-400" fill="currentColor" strokeWidth={0} /> WEBROLY</span>
-          </p>
+  Crafted By{" "}
+  <Heart
+    className="h-3.5 w-3.5 text-gold-400"
+    fill="currentColor"
+    strokeWidth={0}
+  />
+  <span className="font-semibold text-gold-400">
+    WEBROLY
+  </span>
+</p>
         </div>
       </div>
     </footer>
