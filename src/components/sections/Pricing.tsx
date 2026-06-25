@@ -108,7 +108,7 @@ export function Pricing({ pricing }: Props) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.05]">
-                {/* Collect all unique features */
+                {/* Collect all unique features */}
                 {Array.from(new Set(items.flatMap((t) => t.features ?? []))).map((feature) => (
                   <tr key={feature} className="group hover:bg-white/[0.02]">
                     <td className="py-3.5 pr-6 text-sm text-stone-300">{feature}</td>
