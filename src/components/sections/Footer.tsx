@@ -14,12 +14,12 @@ const NAV_LINKS = [
 ];
 
 const FALLBACK = {
-  instagram_url: 'https://www.instagram.com/gowtham.edits1',
+  instagram_url: 'https://www.instagram.com/gowtham.edits1_?igsh=MXc1OWw5eXg0c2NkeQ==',
   instagram_handle: 'gowtham.edits1',
   email: 'hello@gowthamedits.com',
-  whatsapp_number: 'XXXXXXXXXX',
-  whatsapp_display: '+91 90000 00000',
-  location: 'Bengaluru, India • Worldwide remote',
+  whatsapp_number: '+91 96768 31437',
+  whatsapp_display: '+91 96768 31437',
+  location: 'HYDRABAD, India • Worldwide remote',
 };
 
 export function Footer() {
@@ -130,8 +130,8 @@ export function Footer() {
             © {new Date().getFullYear()} GOWTHAM EDITS. All rights reserved.
           </p>
           <p className="flex items-center gap-1.5 text-xs text-stone-500">
-            Crafted with <Heart className="h-3.5 w-3.5 text-gold-400" fill="currentColor" strokeWidth={0} /> for cinematic storytellers
-          </p>
+            Crafted By <Heart className="h-3.5 w-3.5 text-gold-400" fill="currentColor" strokeWidth={0} /> WEBROLY 
+          </p
         </div>
       </div>
     </footer>
