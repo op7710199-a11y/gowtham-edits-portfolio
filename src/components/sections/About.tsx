@@ -1,24 +1,30 @@
 import { Quote, Instagram, MessageCircle, ArrowRight } from 'lucide-react';
 import { Reveal, SectionHeading } from '../Reveal';
-import { useAboutSettings } from '../../hooks/useAboutSettings';
-
-const PLACEHOLDER_SVG = `data:image/svg+xml,${encodeURIComponent(
-  '<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-  '<rect width="400" height="400" fill="#1a1814"/>' +
-  '<circle cx="200" cy="200" r="120" fill="#2a2620"/>' +
-  '<circle cx="200" cy="165" r="48" fill="#3a342a"/>' +
-  '<ellipse cx="200" cy="285" rx="78" ry="52" fill="#3a342a"/>' +
-  '<text x="200" y="350" font-family="system-ui" font-size="13" fill="#7a6840" text-anchor="middle" letter-spacing="2">PROFILE</text>' +
-  '</svg>'
-)}`;
+import { AboutSkeleton } from '../AboutSkeleton';
+import { useAboutSettings } from '../../hooks/useSupabaseQueries';
+import { PROFILE_PLACEHOLDER } from '../../constants/placeholders';
 
 export function About() {
-  const { about, loading } = useAboutSettings();
-  
+  const { data: about, isLoading, isError } = useAboutSettings();
+
+  if (isLoading) {
+    return <AboutSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <section className="section-padding">
+        <div className="container-mx text-center text-stone-400">
+          Failed to load about section.
+        </div>
+      </section>
+    );
+  }
+
   const safeAbout = about ?? {
     name: "Gowtham",
     title: "Professional Photo & Video Editor",
-    bio: "",
+    bio: "Professional cinematic editor specializing in wedding films, reels and commercial storytelling.",
     profile_image_url: "",
     instagram_url: "",
     whatsapp_url: "",
@@ -28,7 +34,7 @@ export function About() {
     cta_text: ""
   };
 
-  const imageUrl = safeAbout.profile_image_url || PLACEHOLDER_SVG;
+  const imageUrl = safeAbout.profile_image_url || PROFILE_PLACEHOLDER;
 
   return (
     <section id="about" className="section-padding relative overflow-hidden">
@@ -60,16 +66,17 @@ export function About() {
               <div className="pointer-events-none absolute inset-0 -m-2 rounded-full bg-gradient-to-b from-gold-500/20 via-gold-600/10 to-transparent blur-2xl" />
 
               <div className="relative aspect-square w-full overflow-hidden rounded-full border-2 border-gold-500/30 bg-ink-900 ring-4 ring-gold-500/[0.07]">
-                {loading ? (
-                  <div className="h-full w-full animate-pulse bg-ink-800" />
-                ) : (
-                  <img
-                    src={imageUrl}
-                    alt={safeAbout.name || 'Profile'}
-                    className="h-full w-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = PLACEHOLDER_SVG; }}
-                  />
-                )}
+                <img
+                  src={imageUrl}
+                  alt={safeAbout.name || 'Profile'}
+                  width={400}
+                  height={400}
+                  loading="lazy"
+                  fetchPriority="high"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                  onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_PLACEHOLDER; }}
+                />
                 {/* Inner gradient overlay for cinematic depth */}
                 <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
               </div>
@@ -107,25 +114,27 @@ export function About() {
             {/* Name & title */}
             <Reveal>
               <div className="mb-6">
-                <h3 className="font-display text-2xl font-bold text-white sm:text-3xl">{safeAbout.name}</h3>
+                <h3 className="font-display text-2xl font-bold text-white sm:text-3xl">{safeAbout.name || "Gowtham"}</h3>
                 <p className="mt-1 text-sm font-medium uppercase tracking-[0.2em] text-gold-300">{safeAbout.title}</p>
               </div>
             </Reveal>
 
             {/* Bio */}
             <Reveal>
-              <p className="text-base leading-relaxed text-stone-300 sm:text-lg">{safeAbout.bio}</p>
+              <p className="text-base leading-relaxed text-stone-300 sm:text-lg">
+                {safeAbout.bio || "Professional cinematic editor specializing in wedding films, reels and commercial storytelling."}
+              </p>
             </Reveal>
 
             {/* Skills */}
-            {safeAbout.skills.length > 0 && (
+            {(safeAbout.skills ?? []).length > 0 && (
               <Reveal className="mt-8">
                 <h4 className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Tools &amp; Expertise</h4>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {safeAbout.skills.map((s) => (
+                  {(safeAbout.skills ?? []).map((s) => (
                     <span
                       key={s}
-                      className="rounded-full border border-gold-500/20 bg-gold-500/[0.05] px-3.5 py-1.5 text-xs font-medium text-gold-100 transition-all hover:border-gold-500/40 hover:bg-gold-500/[0.1]"
+                      className="rounded-full border border-gold-500/20 bg-gold-500/[0.05] px-3.5 py-1.5 text-xs font-medium text-gold-100 transition-all duration-300 hover:scale-105 hover:border-gold-500/40 hover:bg-gold-500/[0.1]"
                     >
                       {s}
                     </span>
@@ -156,6 +165,7 @@ export function About() {
               <Reveal className="mt-8">
                 <a
                   href="#contact"
+                  aria-label={safeAbout.cta_text}
                   className="group inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 text-sm font-semibold text-ink-950 transition-all hover:shadow-[0_0_30px_rgba(198,146,33,0.4)]"
                 >
                   {safeAbout.cta_text}
