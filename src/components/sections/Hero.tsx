@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { ChevronRight, Play, MessageCircle, Sparkles } from 'lucide-react';
 import { useCountUp } from '../../hooks';
-import { Logo } from '../Logo';
 import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
 
 function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
@@ -129,53 +128,68 @@ export function Hero() {
       <div className="pointer-events-none absolute bottom-0 right-0 -z-10 h-[40vh] w-[50vh] rounded-full bg-gold-600/8 blur-[100px]" aria-hidden="true" />
 
       <div className="container-mx flex min-h-[100svh] flex-col justify-center pb-16 pt-28">
-        <div className="max-w-4xl">
-          <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '0ms' }}>
-            <Logo height={64} />
+        <div className="max-w-5xl pt-10">
+          <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+            <img src="/logo.png" alt="Gowtham Edits" className="w-[240px] md:w-[320px] drop-shadow-[0_0_40px_rgba(198,146,33,0.35)]" />
           </div>
 
           <div className={`mt-8 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '150ms' }}>
-            <span className="eyebrow">
-              <span className="h-px w-8 bg-gradient-to-r from-gold-500 to-transparent" aria-hidden="true" />
-              Cinematic Video Editor
-              <span className="h-px w-8 bg-gradient-to-l from-gold-500 to-transparent" aria-hidden="true" />
-            </span>
+            <div className="inline-flex items-center gap-4">
+              <div className="h-px w-12 bg-gold-500" aria-hidden="true" />
+              <span className="uppercase tracking-[0.45em] text-gold-400 text-xs">CINEMATIC VIDEO EDITOR</span>
+              <div className="h-px w-12 bg-gold-500" aria-hidden="true" />
+            </div>
           </div>
 
           <h1
-            className={`mt-6 font-display text-5xl font-bold leading-[0.92] tracking-tight text-white transition-all duration-1000 ease-cinematic sm:text-6xl lg:text-7xl xl:text-8xl ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+            className={`mt-8 font-display text-6xl md:text-7xl lg:text-8xl xl:text-[7rem] leading-[0.9] font-bold text-white transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
             style={{ transitionDelay: '300ms', textShadow: '0 4px 40px rgba(0,0,0,0.7)' }}
           >
-            {words.map((word, i) => (
-              <span key={i} className={i === words.length - 1 ? 'shimmer-text' : ''}>
-                {word}{' '}
-              </span>
-            ))}
+            Crafting<br />
+            Cinematic<br />
+            <span className="text-gradient-gold">Stories</span>
           </h1>
 
-          <p className={`mt-6 max-w-2xl font-serif text-lg italic leading-relaxed text-stone-300 transition-all duration-1000 ease-cinematic sm:text-xl ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '450ms' }}>
-            {safeHero.subheadline}
+          <p className={`mt-8 max-w-2xl text-xl leading-9 text-stone-300 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '450ms' }}>
+            Creating cinematic edits that transform ordinary footage into unforgettable visual stories for weddings, brands and creators.
           </p>
 
-          <div className={`mt-10 flex flex-wrap items-center gap-3 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '600ms' }}>
-            <a href="#portfolio" aria-label="View Portfolio" className="btn-primary group text-base px-8 py-4">
-              <Play className="h-4 w-4" fill="currentColor" aria-hidden="true" />
-              {safeHero.cta_primary}
-              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+          <div 
+            className={`mt-12 flex flex-wrap gap-5 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+            style={{ transitionDelay: "600ms" }}
+          >
+            <a
+              href="#portfolio"
+              className="group relative overflow-hidden rounded-full bg-gold-gradient px-9 py-4 text-black font-semibold text-lg shadow-gold transition-all duration-500 hover:scale-105 hover:shadow-gold-glow"
+            >
+              <span className="relative z-10 flex items-center gap-3">
+                <Play className="h-5 w-5 fill-current" />
+                {safeHero.cta_primary}
+                <ChevronRight className="transition-transform group-hover:translate-x-2" />
+              </span>
+              <div className="absolute inset-0 bg-white/20 opacity-0 transition group-hover:opacity-100"></div>
             </a>
-            <a href="#contact" aria-label="Contact Me" className="btn-ghost group text-base px-8 py-4">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              {safeHero.cta_secondary}
+
+            <a
+              href="#contact"
+              className="group rounded-full border border-gold-500/30 bg-white/[0.03] backdrop-blur-xl px-9 py-4 text-lg text-white transition hover:border-gold-400 hover:bg-gold-500/10"
+            >
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5 text-gold-400" />
+                {safeHero.cta_secondary}
+              </div>
             </a>
+
             <a
               href={`https://wa.me/${whatsappNum}?text=Hi, I'd like to discuss a video editing project.`}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Chat on WhatsApp"
-              className="inline-flex items-center gap-2 rounded-full border border-green-500/40 bg-green-500/10 px-6 py-4 text-sm font-semibold text-green-300 transition-all hover:border-green-400/60 hover:bg-green-500/20"
+              className="group rounded-full border border-green-500/40 bg-green-500/10 px-9 py-4 text-lg text-green-300 transition hover:bg-green-500/20 hover:scale-105"
             >
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
-              {safeHero.cta_whatsapp}
+              <div className="flex items-center gap-3">
+                <MessageCircle className="h-5 w-5" />
+                {safeHero.cta_whatsapp}
+              </div>
             </a>
           </div>
         </div>
