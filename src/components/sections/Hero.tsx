@@ -3,7 +3,6 @@ import { ChevronRight, Play, MessageCircle, Sparkles } from 'lucide-react';
 import { useCountUp } from '../../hooks';
 import { Logo } from '../Logo';
 import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
-import { HeroSkeleton } from '../HeroSkeleton';
 
 function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
   const { ref, value: v } = useCountUp(value, 2000);
@@ -84,7 +83,7 @@ export function Hero() {
   }, [loadVideo]);
 
   if (heroLoading) {
-    return <HeroSkeleton />;
+    return null;
   }
 
   const getGridCols = (length: number) => {
