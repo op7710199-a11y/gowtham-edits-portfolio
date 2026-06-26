@@ -22,11 +22,15 @@ export class SectionErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error(`SectionErrorBoundary${this.props.name ? ` [${this.props.name}]` : ''} caught:`, error, info.componentStack);
+    console.error("========== REACT ERROR ==========");
+    console.error("Section:", this.props.name ?? "Unknown");
+    console.error("Error:", error);
+    console.error("Stack:", info.componentStack);
+    console.error("================================");
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    window.location.reload();
   };
 
   render() {
@@ -38,8 +42,14 @@ export class SectionErrorBoundary extends Component<Props, State> {
               <AlertCircle className="h-7 w-7" />
             </div>
             <p className="text-sm text-stone-400 max-w-md">
-              This section is temporarily unavailable. Try refreshing the page.
+              We're having trouble loading this section right now.
+              Please refresh the page or try again in a few moments.
             </p>
+            {import.meta.env.DEV && this.state.error && (
+              <pre className="mt-3 max-w-xl overflow-auto rounded-lg bg-red-950/40 p-3 text-left text-xs text-red-300">
+                {this.state.error.message}
+              </pre>
+            )}
             <button
               onClick={this.handleRetry}
               className="flex items-center gap-2 rounded-full border border-white/10 px-5 py-2.5 text-xs font-medium text-stone-300 transition-all hover:border-gold-500/30 hover:text-gold-100"
