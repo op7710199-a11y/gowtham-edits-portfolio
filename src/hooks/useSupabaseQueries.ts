@@ -403,13 +403,15 @@ export function useFAQsAdmin() {
       onError: (error) => { console.error(error); },
     }),
     remove: useMutation({
-  mutationFn: (id: string) => faqService.remove(id),
-  onSuccess: async () => {
-    await qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
-    await qc.invalidateQueries({ queryKey: queryKeys.faqs });
-    await qc.refetchQueries({ queryKey: queryKeys.faqs });
-  },
-  onError: (error) => {
-    console.error(error);
-  },
-}),
+      mutationFn: (id: string) => faqService.remove(id),
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.faqs });
+        await qc.refetchQueries({ queryKey: queryKeys.faqs });
+      },
+      onError: (error) => {
+        console.error(error);
+      },
+    }),
+  };
+        }
