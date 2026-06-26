@@ -1,16 +1,17 @@
 import { Quote, Instagram, MessageCircle, ArrowRight } from 'lucide-react';
 import { Reveal, SectionHeading } from '../Reveal';
-import { AboutSkeleton } from '../AboutSkeleton';
 import { useAboutSettings } from '../../hooks/useSupabaseQueries';
-import { PROFILE_PLACEHOLDER } from '../../constants/placeholders';
 
 export function About() {
   const { data: about, isLoading, isError } = useAboutSettings();
 
+  // If data is still loading, we return null to avoid UI layout shifts 
+  // or errors until the data is available.
   if (isLoading) {
-    return <AboutSkeleton />;
+    return null;
   }
 
+  // Graceful handling of fetch errors
   if (isError) {
     return (
       <section className="section-padding">
@@ -21,6 +22,7 @@ export function About() {
     );
   }
 
+  // Fallback data if API returns null/undefined
   const safeAbout = about ?? {
     name: "Gowtham",
     title: "Professional Photo & Video Editor",
@@ -34,7 +36,8 @@ export function About() {
     cta_text: ""
   };
 
-  const imageUrl = safeAbout.profile_image_url || PROFILE_PLACEHOLDER;
+  const fallbackImage = "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg";
+  const imageUrl = safeAbout.profile_image_url || fallbackImage;
 
   return (
     <section id="about" className="section-padding relative overflow-hidden">
@@ -75,7 +78,7 @@ export function About() {
                   fetchPriority="high"
                   decoding="async"
                   className="h-full w-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = PROFILE_PLACEHOLDER; }}
+                  onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
                 />
                 {/* Inner gradient overlay for cinematic depth */}
                 <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
