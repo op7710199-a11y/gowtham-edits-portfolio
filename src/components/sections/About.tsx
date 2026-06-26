@@ -5,15 +5,24 @@ import { useAboutSettings } from '../../hooks/useSupabaseQueries';
 export function About() {
   const { data: about, isLoading, isError } = useAboutSettings();
 
+  // DIAGNOSTIC LOADING STATE
   if (isLoading) {
-    return null;
+    return (
+      <section id="about" className="section-padding">
+        <div className="container-mx text-center text-gold-500 font-display text-xl animate-pulse">
+          Loading About...
+        </div>
+      </section>
+    );
   }
 
+  // DIAGNOSTIC ERROR STATE
   if (isError) {
+    console.error("About Error: Supabase fetch failed. Check RLS policies or table existence.");
     return (
-      <section className="section-padding">
-        <div className="container-mx text-center text-stone-400">
-          Failed to load about section.
+      <section id="about" className="section-padding">
+        <div className="container-mx text-center text-red-400">
+          Failed to load About section. Please check database connectivity.
         </div>
       </section>
     );
@@ -29,7 +38,7 @@ export function About() {
     skills: [],
     quote: "",
     quote_author: "",
-    cta_text: ""
+    cta_text: "Let's Talk"
   };
 
   const fallbackImage = "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg";
@@ -44,11 +53,7 @@ export function About() {
       <div className="container-mx">
         <SectionHeading
           eyebrow="About"
-          title={
-            <>
-              The editor behind <span className="text-gradient-gold">the films</span>
-            </>
-          }
+          title={<>The editor behind <span className="text-gradient-gold">the films</span></>}
           subtitle="Get to know the person behind every cut, color, and cinematic moment."
         />
 
@@ -72,7 +77,6 @@ export function About() {
                   height={600}
                   loading="lazy"
                   fetchPriority="high"
-                  decoding="async"
                   className="h-full w-full object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
                 />
@@ -109,7 +113,6 @@ export function About() {
 
           {/* Right column */}
           <div>
-            {/* Name & title */}
             <Reveal>
               <div className="mb-6">
                 <h3 className="text-4xl lg:text-5xl font-bold text-white font-display">{safeAbout.name || "Gowtham"}</h3>
@@ -117,23 +120,18 @@ export function About() {
               </div>
             </Reveal>
 
-            {/* Bio */}
             <Reveal>
               <p className="text-base leading-relaxed text-stone-300 sm:text-lg">
                 {safeAbout.bio || "Professional cinematic editor specializing in wedding films, reels and commercial storytelling."}
               </p>
             </Reveal>
 
-            {/* Skills */}
             {(safeAbout.skills ?? []).length > 0 && (
               <Reveal className="mt-8">
                 <h4 className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Tools &amp; Expertise</h4>
                 <div className="mt-4 flex flex-wrap gap-3">
                   {(safeAbout.skills ?? []).map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full border border-gold-500/40 bg-black/40 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-500 hover:bg-gold-500 hover:text-black hover:scale-105"
-                    >
+                    <span key={s} className="rounded-full border border-gold-500/40 bg-black/40 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-500 hover:bg-gold-500 hover:text-black hover:scale-105">
                       {s}
                     </span>
                   ))}
@@ -141,7 +139,6 @@ export function About() {
               </Reveal>
             )}
 
-            {/* Quote */}
             {safeAbout.quote && (
               <Reveal className="mt-8">
                 <div className="relative overflow-hidden rounded-2xl border border-gold-500/15 bg-gradient-to-br from-ink-900/60 to-ink-950/40 p-6">
@@ -158,12 +155,10 @@ export function About() {
               </Reveal>
             )}
 
-            {/* CTA */}
             {safeAbout.cta_text && (
               <Reveal className="mt-8">
                 <a
                   href="#contact"
-                  aria-label={safeAbout.cta_text}
                   className="group inline-flex items-center gap-2 rounded-full bg-gold-gradient px-8 py-4 text-base font-semibold text-ink-950 transition-all hover:shadow-[0_0_30px_rgba(198,146,33,0.4)]"
                 >
                   {safeAbout.cta_text}
