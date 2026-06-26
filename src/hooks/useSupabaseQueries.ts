@@ -48,6 +48,18 @@ export const queryKeys = {
   logo: ['logo'] as const,
 };
 
+// ─── Constants ─────────────────────────────────────────────────────────────
+
+const DEFAULT_QUERY_OPTIONS = {
+  staleTime: 0,
+  gcTime: 5 * 60 * 1000,
+  retry: 2,
+  refetchOnMount: true,
+  refetchOnReconnect: true,
+  refetchOnWindowFocus: true,
+  networkMode: "online" as const,
+};
+
 // ─── Public (read-only) hooks ────────────────────────────────────────────────
 
 export function useAboutSettings(): UseQueryResult<AboutSettings | null> {
@@ -56,12 +68,12 @@ export function useAboutSettings(): UseQueryResult<AboutSettings | null> {
     queryFn: async () => {
       try {
         return await aboutService.getPublic();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return null;
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -71,12 +83,12 @@ export function useServices(): UseQueryResult<Service[]> {
     queryFn: async () => {
       try {
         return await servicesService.getPublished();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return SERVICES as unknown as Service[];
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -86,12 +98,12 @@ export function usePricing(): UseQueryResult<PricingTier[]> {
     queryFn: async () => {
       try {
         return await pricingService.getPublished();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return PRICING as unknown as PricingTier[];
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -101,12 +113,12 @@ export function usePortfolio(): UseQueryResult<PortfolioItem[]> {
     queryFn: async () => {
       try {
         return await portfolioService.getPublished();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return PROJECTS as unknown as PortfolioItem[];
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -116,12 +128,12 @@ export function useTestimonials(): UseQueryResult<Testimonial[]> {
     queryFn: async () => {
       try {
         return await testimonialsService.getPublished();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return TESTIMONIALS as unknown as Testimonial[];
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -131,12 +143,12 @@ export function useFAQs(): UseQueryResult<FaqItem[]> {
     queryFn: async () => {
       try {
         return await faqService.getPublished();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return FAQS as unknown as FaqItem[];
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -146,12 +158,12 @@ export function useHeroSettings(): UseQueryResult<HeroSettings | null> {
     queryFn: async () => {
       try {
         return await heroService.get();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return null;
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -161,12 +173,12 @@ export function useStats(): UseQueryResult<Stat[]> {
     queryFn: async () => {
       try {
         return await statsService.getPublished();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return [];
       }
     },
-    staleTime: 5 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -176,12 +188,12 @@ export function useSiteSettings(): UseQueryResult<Record<string, unknown>> {
     queryFn: async () => {
       try {
         return await siteSettingsService.getAll();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return {};
       }
     },
-    staleTime: 10 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -191,12 +203,12 @@ export function useLogoUrl(): UseQueryResult<string> {
     queryFn: async () => {
       try {
         return await siteSettingsService.getLogoUrl();
-      } catch {
+      } catch (error) {
+        console.error(error);
         return '';
       }
     },
-    staleTime: 10 * 60 * 1000,
-    retry: 2,
+    ...DEFAULT_QUERY_OPTIONS,
   });
 }
 
@@ -208,29 +220,36 @@ export function useServicesAdmin() {
     query: useQuery({
       queryKey: queryKeys.servicesAdmin,
       queryFn: () => servicesService.getAll(),
+      ...DEFAULT_QUERY_OPTIONS,
       retry: 1,
     }),
     create: useMutation({
       mutationFn: (payload: Partial<Service>) => servicesService.create(payload),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.servicesAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.services });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.servicesAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.services });
+        await qc.refetchQueries({ queryKey: queryKeys.services });
       },
+      onError: (error) => { console.error(error); },
     }),
     update: useMutation({
       mutationFn: ({ id, patch }: { id: string; patch: Partial<Service> }) =>
         servicesService.update(id, patch),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.servicesAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.services });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.servicesAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.services });
+        await qc.refetchQueries({ queryKey: queryKeys.services });
       },
+      onError: (error) => { console.error(error); },
     }),
     remove: useMutation({
       mutationFn: (id: string) => servicesService.remove(id),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.servicesAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.services });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.servicesAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.services });
+        await qc.refetchQueries({ queryKey: queryKeys.services });
       },
+      onError: (error) => { console.error(error); },
     }),
   };
 }
@@ -241,29 +260,36 @@ export function usePricingAdmin() {
     query: useQuery({
       queryKey: queryKeys.pricingAdmin,
       queryFn: () => pricingService.getAll(),
+      ...DEFAULT_QUERY_OPTIONS,
       retry: 1,
     }),
     create: useMutation({
       mutationFn: (payload: Partial<PricingTier>) => pricingService.create(payload),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.pricingAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.pricing });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.pricingAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.pricing });
+        await qc.refetchQueries({ queryKey: queryKeys.pricing });
       },
+      onError: (error) => { console.error(error); },
     }),
     update: useMutation({
       mutationFn: ({ id, patch }: { id: string; patch: Partial<PricingTier> }) =>
         pricingService.update(id, patch),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.pricingAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.pricing });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.pricingAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.pricing });
+        await qc.refetchQueries({ queryKey: queryKeys.pricing });
       },
+      onError: (error) => { console.error(error); },
     }),
     remove: useMutation({
       mutationFn: (id: string) => pricingService.remove(id),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.pricingAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.pricing });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.pricingAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.pricing });
+        await qc.refetchQueries({ queryKey: queryKeys.pricing });
       },
+      onError: (error) => { console.error(error); },
     }),
   };
 }
@@ -274,29 +300,36 @@ export function usePortfolioAdmin() {
     query: useQuery({
       queryKey: queryKeys.portfolioAdmin,
       queryFn: () => portfolioService.getAll(),
+      ...DEFAULT_QUERY_OPTIONS,
       retry: 1,
     }),
     create: useMutation({
       mutationFn: (payload: Partial<PortfolioItem>) => portfolioService.create(payload),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.portfolioAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.portfolio });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.portfolioAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.portfolio });
+        await qc.refetchQueries({ queryKey: queryKeys.portfolio });
       },
+      onError: (error) => { console.error(error); },
     }),
     update: useMutation({
       mutationFn: ({ id, patch }: { id: string; patch: Partial<PortfolioItem> }) =>
         portfolioService.update(id, patch),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.portfolioAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.portfolio });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.portfolioAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.portfolio });
+        await qc.refetchQueries({ queryKey: queryKeys.portfolio });
       },
+      onError: (error) => { console.error(error); },
     }),
     remove: useMutation({
       mutationFn: (id: string) => portfolioService.remove(id),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.portfolioAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.portfolio });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.portfolioAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.portfolio });
+        await qc.refetchQueries({ queryKey: queryKeys.portfolio });
       },
+      onError: (error) => { console.error(error); },
     }),
   };
 }
@@ -307,29 +340,36 @@ export function useTestimonialsAdmin() {
     query: useQuery({
       queryKey: queryKeys.testimonialsAdmin,
       queryFn: () => testimonialsService.getAll(),
+      ...DEFAULT_QUERY_OPTIONS,
       retry: 1,
     }),
     create: useMutation({
       mutationFn: (payload: Partial<Testimonial>) => testimonialsService.create(payload),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.testimonialsAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.testimonials });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.testimonialsAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.testimonials });
+        await qc.refetchQueries({ queryKey: queryKeys.testimonials });
       },
+      onError: (error) => { console.error(error); },
     }),
     update: useMutation({
       mutationFn: ({ id, patch }: { id: string; patch: Partial<Testimonial> }) =>
         testimonialsService.update(id, patch),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.testimonialsAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.testimonials });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.testimonialsAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.testimonials });
+        await qc.refetchQueries({ queryKey: queryKeys.testimonials });
       },
+      onError: (error) => { console.error(error); },
     }),
     remove: useMutation({
       mutationFn: (id: string) => testimonialsService.remove(id),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.testimonialsAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.testimonials });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.testimonialsAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.testimonials });
+        await qc.refetchQueries({ queryKey: queryKeys.testimonials });
       },
+      onError: (error) => { console.error(error); },
     }),
   };
 }
@@ -340,61 +380,30 @@ export function useFAQsAdmin() {
     query: useQuery({
       queryKey: queryKeys.faqsAdmin,
       queryFn: () => faqService.getAll(),
+      ...DEFAULT_QUERY_OPTIONS,
       retry: 1,
     }),
     create: useMutation({
       mutationFn: (payload: Partial<FaqItem>) => faqService.create(payload),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.faqs });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.faqs });
+        await qc.refetchQueries({ queryKey: queryKeys.faqs });
       },
+      onError: (error) => { console.error(error); },
     }),
     update: useMutation({
       mutationFn: ({ id, patch }: { id: string; patch: Partial<FaqItem> }) =>
         faqService.update(id, patch),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.faqs });
+      onSuccess: async () => {
+        await qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
+        await qc.invalidateQueries({ queryKey: queryKeys.faqs });
+        await qc.refetchQueries({ queryKey: queryKeys.faqs });
       },
+      onError: (error) => { console.error(error); },
     }),
     remove: useMutation({
       mutationFn: (id: string) => faqService.remove(id),
-      onSuccess: () => {
-        qc.invalidateQueries({ queryKey: queryKeys.faqsAdmin });
-        qc.invalidateQueries({ queryKey: queryKeys.faqs });
-      },
-    }),
-  };
-}
-
-export function useAboutAdminMutations() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: Partial<AboutSettings>) => aboutService.upsert(payload),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.about });
-      qc.invalidateQueries({ queryKey: queryKeys.aboutAdmin });
-    },
-  });
-}
-
-export function useHeroMutations() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: Partial<HeroSettings>) => heroService.upsert(payload),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.hero });
-    },
-  });
-}
-
-export function useLogoMutations() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (url: string) => siteSettingsService.updateLogoUrl(url),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.logo });
-      qc.invalidateQueries({ queryKey: queryKeys.siteSettings });
-    },
-  });
-}
+      onSuccess: async () => {
+        await qc.invalidateQueries
+        
