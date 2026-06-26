@@ -61,8 +61,15 @@ export function Navbar() {
   const close = () => setOpen(false);
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ease-cinematic ${scrolled ? 'border-b border-white/[0.06] bg-ink-950/85 backdrop-blur-2xl' : 'bg-transparent'}`}>
-      <nav className="container-mx flex h-16 items-center justify-between sm:h-[4.5rem]" aria-label="Main Navigation">
+    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? 'py-3' : 'py-5'}`}>
+      <nav 
+        className={`container-mx flex items-center justify-between rounded-full border transition-all duration-700 ${
+          scrolled
+            ? 'border-gold-500/20 bg-black/55 backdrop-blur-3xl shadow-[0_20px_80px_rgba(0,0,0,.55)] px-8 h-16'
+            : 'border-transparent bg-transparent px-2 h-20'
+        }`}
+        aria-label="Main Navigation"
+      >
         <div className="w-[170px] shrink-0">
           <Logo href="#home" height={45} />
         </div>
@@ -92,14 +99,13 @@ export function Navbar() {
             aria-label={open ? 'Close menu' : 'Open menu'} 
             aria-expanded={open}
             aria-controls="mobile-menu"
-            className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/[0.04] text-stone-200 transition-colors hover:border-gold-500/40 hover:text-gold-100 lg:hidden"
+            className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/[0.04] text-stone-200 transition-colors hover:border-gold-500/40 hover:text-gold-100 lg:hidden"
           >
             {open ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
           </button>
         </div>
       </nav>
 
-      {/* Mobile drawer with smooth transition */}
       <div 
         id="mobile-menu"
         aria-hidden={!open}
