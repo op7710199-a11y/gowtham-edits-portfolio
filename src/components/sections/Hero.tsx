@@ -41,8 +41,7 @@ export function Hero() {
 
   const safeStats = stats ?? [];
   const whatsappNum = settings?.whatsapp_number?.toString().replace(/\D/g, "") ?? "919676831437";
-  const words = useMemo(() => safeHero.headline.split(" "), [safeHero.headline]);
-
+  
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(media.matches);
@@ -81,9 +80,7 @@ export function Hero() {
     return () => document.removeEventListener("visibilitychange", handler);
   }, [loadVideo]);
 
-  if (heroLoading) {
-    return null;
-  }
+  if (heroLoading) return null;
 
   const getGridCols = (length: number) => {
     if (length === 3) return 'grid-cols-3';
@@ -124,74 +121,77 @@ export function Hero() {
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/40 to-ink-950/80" />
       </div>
 
-      <div className="pointer-events-none absolute -top-1/4 left-1/2 -z-10 h-[70vh] w-[70vh] -translate-x-1/2 rounded-full bg-gold-500/12 blur-[130px]" aria-hidden="true" />
-      <div className="pointer-events-none absolute bottom-0 right-0 -z-10 h-[40vh] w-[50vh] rounded-full bg-gold-600/8 blur-[100px]" aria-hidden="true" />
+      <div className="container-mx min-h-[100svh] flex items-center py-32">
+        <div className="grid w-full items-center gap-16 lg:grid-cols-2">
+          
+          {/* Left Column Content */}
+          <div className="max-w-2xl">
+            <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+              <img src="/logo.png" alt="Gowtham Edits" className="w-[240px] md:w-[320px] drop-shadow-[0_0_40px_rgba(198,146,33,0.35)]" />
+            </div>
 
-      <div className="container-mx flex min-h-[100svh] flex-col justify-center pb-16 pt-28">
-        <div className="max-w-5xl pt-10">
-          <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-            <img src="/logo.png" alt="Gowtham Edits" className="w-[240px] md:w-[320px] drop-shadow-[0_0_40px_rgba(198,146,33,0.35)]" />
-          </div>
+            <div className={`mt-8 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '150ms' }}>
+              <div className="inline-flex items-center gap-4">
+                <div className="h-px w-12 bg-gold-500" aria-hidden="true" />
+                <span className="uppercase tracking-[0.45em] text-gold-400 text-xs">CINEMATIC VIDEO EDITOR</span>
+                <div className="h-px w-12 bg-gold-500" aria-hidden="true" />
+              </div>
+            </div>
 
-          <div className={`mt-8 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '150ms' }}>
-            <div className="inline-flex items-center gap-4">
-              <div className="h-px w-12 bg-gold-500" aria-hidden="true" />
-              <span className="uppercase tracking-[0.45em] text-gold-400 text-xs">CINEMATIC VIDEO EDITOR</span>
-              <div className="h-px w-12 bg-gold-500" aria-hidden="true" />
+            <h1
+              className={`mt-8 font-display text-6xl md:text-7xl lg:text-8xl xl:text-[7rem] leading-[0.9] font-bold text-white transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+              style={{ transitionDelay: '300ms', textShadow: '0 4px 40px rgba(0,0,0,0.7)' }}
+            >
+              Crafting<br />
+              Cinematic<br />
+              <span className="text-gradient-gold">Stories</span>
+            </h1>
+
+            <p className={`mt-8 max-w-2xl text-xl leading-9 text-stone-300 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '450ms' }}>
+              Creating cinematic edits that transform ordinary footage into unforgettable visual stories for weddings, brands and creators.
+            </p>
+
+            <div 
+              className={`mt-12 flex flex-wrap gap-5 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
+              style={{ transitionDelay: "600ms" }}
+            >
+              <a href="#portfolio" className="group relative overflow-hidden rounded-full bg-gold-gradient px-9 py-4 text-black font-semibold text-lg shadow-gold transition-all duration-500 hover:scale-105 hover:shadow-gold-glow">
+                <span className="relative z-10 flex items-center gap-3">
+                  <Play className="h-5 w-5 fill-current" />
+                  {safeHero.cta_primary}
+                  <ChevronRight className="transition-transform group-hover:translate-x-2" />
+                </span>
+                <div className="absolute inset-0 bg-white/20 opacity-0 transition group-hover:opacity-100"></div>
+              </a>
+
+              <a href="#contact" className="group rounded-full border border-gold-500/30 bg-white/[0.03] backdrop-blur-xl px-9 py-4 text-lg text-white transition hover:border-gold-400 hover:bg-gold-500/10">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="h-5 w-5 text-gold-400" />
+                  {safeHero.cta_secondary}
+                </div>
+              </a>
+
+              <a href={`https://wa.me/${whatsappNum}`} target="_blank" rel="noopener noreferrer" className="group rounded-full border border-green-500/40 bg-green-500/10 px-9 py-4 text-lg text-green-300 transition hover:bg-green-500/20 hover:scale-105">
+                <div className="flex items-center gap-3">
+                  <MessageCircle className="h-5 w-5" />
+                  {safeHero.cta_whatsapp}
+                </div>
+              </a>
             </div>
           </div>
 
-          <h1
-            className={`mt-8 font-display text-6xl md:text-7xl lg:text-8xl xl:text-[7rem] leading-[0.9] font-bold text-white transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-            style={{ transitionDelay: '300ms', textShadow: '0 4px 40px rgba(0,0,0,0.7)' }}
-          >
-            Crafting<br />
-            Cinematic<br />
-            <span className="text-gradient-gold">Stories</span>
-          </h1>
-
-          <p className={`mt-8 max-w-2xl text-xl leading-9 text-stone-300 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '450ms' }}>
-            Creating cinematic edits that transform ordinary footage into unforgettable visual stories for weddings, brands and creators.
-          </p>
-
-          <div 
-            className={`mt-12 flex flex-wrap gap-5 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-            style={{ transitionDelay: "600ms" }}
-          >
-            <a
-              href="#portfolio"
-              className="group relative overflow-hidden rounded-full bg-gold-gradient px-9 py-4 text-black font-semibold text-lg shadow-gold transition-all duration-500 hover:scale-105 hover:shadow-gold-glow"
-            >
-              <span className="relative z-10 flex items-center gap-3">
-                <Play className="h-5 w-5 fill-current" />
-                {safeHero.cta_primary}
-                <ChevronRight className="transition-transform group-hover:translate-x-2" />
-              </span>
-              <div className="absolute inset-0 bg-white/20 opacity-0 transition group-hover:opacity-100"></div>
-            </a>
-
-            <a
-              href="#contact"
-              className="group rounded-full border border-gold-500/30 bg-white/[0.03] backdrop-blur-xl px-9 py-4 text-lg text-white transition hover:border-gold-400 hover:bg-gold-500/10"
-            >
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5 text-gold-400" />
-                {safeHero.cta_secondary}
-              </div>
-            </a>
-
-            <a
-              href={`https://wa.me/${whatsappNum}?text=Hi, I'd like to discuss a video editing project.`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group rounded-full border border-green-500/40 bg-green-500/10 px-9 py-4 text-lg text-green-300 transition hover:bg-green-500/20 hover:scale-105"
-            >
-              <div className="flex items-center gap-3">
-                <MessageCircle className="h-5 w-5" />
-                {safeHero.cta_whatsapp}
-              </div>
-            </a>
+          {/* Right Column Image Card */}
+          <div className="relative hidden lg:flex items-center justify-center">
+            <div className="absolute h-[520px] w-[520px] rounded-full bg-gold-500/10 blur-[120px]" />
+            <div className="relative overflow-hidden rounded-[36px] border border-gold-500/20 bg-white/5 backdrop-blur-2xl shadow-[0_30px_120px_rgba(0,0,0,.5)]">
+              <img
+                src={safeHero.bg_image_url || "https://images.pexels.com/photos/3014019/pexels-photo-3014019.jpeg?auto=compress&cs=tinysrgb&w=800"}
+                alt="Hero"
+                className="h-[620px] w-[420px] object-cover"
+              />
+            </div>
           </div>
+
         </div>
 
         {safeStats.length > 0 && (
