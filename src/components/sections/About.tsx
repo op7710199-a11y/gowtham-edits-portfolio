@@ -5,13 +5,10 @@ import { useAboutSettings } from '../../hooks/useSupabaseQueries';
 export function About() {
   const { data: about, isLoading, isError } = useAboutSettings();
 
-  // If data is still loading, we return null to avoid UI layout shifts 
-  // or errors until the data is available.
   if (isLoading) {
     return null;
   }
 
-  // Graceful handling of fetch errors
   if (isError) {
     return (
       <section className="section-padding">
@@ -22,10 +19,9 @@ export function About() {
     );
   }
 
-  // Fallback data if API returns null/undefined
   const safeAbout = about ?? {
     name: "Gowtham",
-    title: "Professional Photo & Video Editor",
+    title: "CINEMATIC FILM EDITOR",
     bio: "Professional cinematic editor specializing in wedding films, reels and commercial storytelling.",
     profile_image_url: "",
     instagram_url: "",
@@ -56,31 +52,30 @@ export function About() {
           subtitle="Get to know the person behind every cut, color, and cinematic moment."
         />
 
-        <div className="mt-14 grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+        <div className="mt-24 grid items-center gap-20 lg:grid-cols-[0.85fr_1.15fr]">
           {/* Portrait with circular glow */}
           <Reveal>
-            <div className="relative mx-auto w-full max-w-xs sm:max-w-sm">
+            <div className="relative mx-auto w-full max-w-md lg:max-w-lg">
               {/* Rotating gold ring */}
               <div
                 className="pointer-events-none absolute inset-0 -m-4 animate-spin-slow rounded-full border border-dashed border-gold-500/20"
                 style={{ animationDuration: '30s' }}
               />
               {/* Outer glow */}
-              <div className="pointer-events-none absolute inset-0 -m-2 rounded-full bg-gradient-to-b from-gold-500/20 via-gold-600/10 to-transparent blur-2xl" />
+              <div className="pointer-events-none absolute inset-0 -m-2 rounded-full bg-gradient-to-b from-gold-500/20 via-gold-600/10 to-transparent blur-[120px]" />
 
-              <div className="relative aspect-square w-full overflow-hidden rounded-full border-2 border-gold-500/30 bg-ink-900 ring-4 ring-gold-500/[0.07]">
+              <div className="relative aspect-square w-full overflow-hidden rounded-full border-4 border-gold-400/40 bg-ink-900 ring-8 ring-gold-400/10">
                 <img
                   src={imageUrl}
                   alt={safeAbout.name || 'Profile'}
-                  width={400}
-                  height={400}
+                  width={600}
+                  height={600}
                   loading="lazy"
                   fetchPriority="high"
                   decoding="async"
                   className="h-full w-full object-cover"
                   onError={(e) => { (e.target as HTMLImageElement).src = fallbackImage; }}
                 />
-                {/* Inner gradient overlay for cinematic depth */}
                 <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-t from-ink-950/40 via-transparent to-transparent" />
               </div>
 
@@ -90,10 +85,10 @@ export function About() {
                   href={safeAbout.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="absolute right-2 top-2 grid h-10 w-10 place-items-center rounded-full border border-gold-500/30 bg-ink-950/80 text-gold-300 backdrop-blur-md transition-all hover:scale-110 hover:bg-gold-500 hover:text-ink-950"
+                  className="absolute right-2 top-2 grid h-12 w-12 place-items-center rounded-full border border-gold-500/30 bg-ink-950/80 text-gold-300 backdrop-blur-md transition-all hover:scale-110 hover:bg-gold-500 hover:text-ink-950"
                   aria-label="Instagram"
                 >
-                  <Instagram className="h-4 w-4" />
+                  <Instagram className="h-5 w-5" />
                 </a>
               )}
 
@@ -103,10 +98,10 @@ export function About() {
                   href={safeAbout.whatsapp_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="absolute left-2 top-2 grid h-10 w-10 place-items-center rounded-full border border-green-500/30 bg-ink-950/80 text-green-300 backdrop-blur-md transition-all hover:scale-110 hover:bg-green-500 hover:text-ink-950"
+                  className="absolute left-2 top-2 grid h-12 w-12 place-items-center rounded-full border border-green-500/30 bg-ink-950/80 text-green-300 backdrop-blur-md transition-all hover:scale-110 hover:bg-green-500 hover:text-ink-950"
                   aria-label="WhatsApp"
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <MessageCircle className="h-5 w-5" />
                 </a>
               )}
             </div>
@@ -117,8 +112,8 @@ export function About() {
             {/* Name & title */}
             <Reveal>
               <div className="mb-6">
-                <h3 className="font-display text-2xl font-bold text-white sm:text-3xl">{safeAbout.name || "Gowtham"}</h3>
-                <p className="mt-1 text-sm font-medium uppercase tracking-[0.2em] text-gold-300">{safeAbout.title}</p>
+                <h3 className="text-4xl lg:text-5xl font-bold text-white font-display">{safeAbout.name || "Gowtham"}</h3>
+                <p className="mt-3 text-base uppercase tracking-[0.45em] text-gold-400">{safeAbout.title || "CINEMATIC FILM EDITOR"}</p>
               </div>
             </Reveal>
 
@@ -133,11 +128,11 @@ export function About() {
             {(safeAbout.skills ?? []).length > 0 && (
               <Reveal className="mt-8">
                 <h4 className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Tools &amp; Expertise</h4>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-4 flex flex-wrap gap-3">
                   {(safeAbout.skills ?? []).map((s) => (
                     <span
                       key={s}
-                      className="rounded-full border border-gold-500/20 bg-gold-500/[0.05] px-3.5 py-1.5 text-xs font-medium text-gold-100 transition-all duration-300 hover:scale-105 hover:border-gold-500/40 hover:bg-gold-500/[0.1]"
+                      className="rounded-full border border-gold-500/40 bg-black/40 px-5 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all duration-500 hover:bg-gold-500 hover:text-black hover:scale-105"
                     >
                       {s}
                     </span>
@@ -169,10 +164,10 @@ export function About() {
                 <a
                   href="#contact"
                   aria-label={safeAbout.cta_text}
-                  className="group inline-flex items-center gap-2 rounded-full bg-gold-gradient px-6 py-3 text-sm font-semibold text-ink-950 transition-all hover:shadow-[0_0_30px_rgba(198,146,33,0.4)]"
+                  className="group inline-flex items-center gap-2 rounded-full bg-gold-gradient px-8 py-4 text-base font-semibold text-ink-950 transition-all hover:shadow-[0_0_30px_rgba(198,146,33,0.4)]"
                 >
                   {safeAbout.cta_text}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </a>
               </Reveal>
             )}
