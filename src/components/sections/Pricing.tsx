@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, X, Star, Truck, ArrowUpRight, LayoutList, CreditCard } from 'lucide-react';
+import { Star, Truck, ArrowUpRight, LayoutList, CreditCard } from 'lucide-react';
 import { Reveal, RevealScope, SectionHeading } from '../Reveal';
 import type { PricingTier } from '../../types/database';
 
@@ -15,139 +15,104 @@ export function Pricing({ pricing }: Props) {
   return (
     <section id="pricing" className="section-padding relative overflow-hidden">
       <div className="pointer-events-none absolute right-0 top-1/3 -z-10 h-[45vh] w-[45vh] rounded-full bg-gold-500/10 blur-[110px]" />
+      
       <div className="container-mx">
         <SectionHeading
-          eyebrow="Pricing"
-          title={<>Simple, transparent <span className="text-gradient-gold">packages</span></>}
-          subtitle="Starting points for the most-requested edits. Final pricing shaped by your scope — reach out for an exact quote."
+          eyebrow="PRICING"
+          title={<>Choose Your <span className="text-gradient-gold">Editing Package</span></>}
+          subtitle="Transparent pricing with premium quality, fast delivery and cinematic storytelling."
         />
 
         {/* View toggle */}
         <Reveal className="mt-8 flex justify-center">
-          <div className="inline-flex rounded-full border border-white/10 bg-ink-900/60 p-1">
+          <div className="inline-flex rounded-full border border-white/10 bg-black/40 p-1">
             <button type="button" onClick={() => setMode('cards')}
-              className={`flex items-center gap-2 rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wide transition-all ${mode === 'cards' ? 'bg-gold-gradient text-ink-950' : 'text-stone-400 hover:text-white'}`}>
-              <CreditCard className="h-3.5 w-3.5" /> Cards
+              className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${mode === 'cards' ? 'bg-gold-gradient text-black' : 'text-stone-400 hover:text-white'}`}>
+              <CreditCard className="h-4 w-4" /> Cards
             </button>
             <button type="button" onClick={() => setMode('table')}
-              className={`flex items-center gap-2 rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wide transition-all ${mode === 'table' ? 'bg-gold-gradient text-ink-950' : 'text-stone-400 hover:text-white'}`}>
-              <LayoutList className="h-3.5 w-3.5" /> Compare
+              className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-xs font-semibold uppercase tracking-wider transition-all ${mode === 'table' ? 'bg-gold-gradient text-black' : 'text-stone-400 hover:text-white'}`}>
+              <LayoutList className="h-4 w-4" /> Compare
             </button>
           </div>
         </Reveal>
 
         {mode === 'cards' ? (
-          <RevealScope className="mt-12 grid gap-6 lg:grid-cols-3">
+          <RevealScope className="mt-20 grid gap-8 lg:grid-cols-3">
             {items.map((tier, i) => (
               <Reveal key={tier.id ?? i} delay={i * 120} as="article">
-                <div className={`relative h-full overflow-hidden rounded-3xl p-7 sm:p-8 transition-all duration-500 hover:-translate-y-1 ${
-                  tier.is_popular
-                    ? 'glass-gold border-gold-500/40 shadow-gold-glow'
-                    : 'card-glass hover:border-gold-500/20 hover:shadow-gold'
-                }`}>
+                <div className="group relative overflow-hidden rounded-[32px] border border-gold-500/20 bg-gradient-to-b from-ink-900 to-black p-8 transition-all duration-700 hover:-translate-y-3 hover:border-gold-400 hover:shadow-[0_0_70px_rgba(198,146,33,0.25)] h-full">
+                  {/* Gold top border */}
+                  <div className="absolute left-0 top-0 h-1 w-full bg-gold-gradient" />
+                  
                   {tier.is_popular && (
-                    <>
-                      <div className="pointer-events-none absolute -top-1/3 right-0 -z-10 h-[40vh] w-[40vh] rounded-full bg-gold-500/15 blur-[100px]" />
-                      <span className="absolute right-5 top-5 inline-flex items-center gap-1.5 rounded-full bg-gold-gradient px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-950">
-                        <Star className="h-3 w-3" fill="currentColor" strokeWidth={0} /> Most Popular
-                      </span>
-                    </>
+                    <span className="absolute right-6 top-6 rounded-full bg-gold-gradient px-4 py-2 text-xs font-bold uppercase tracking-wider text-black">
+                      MOST POPULAR
+                    </span>
                   )}
+                  
                   <h3 className="font-display text-2xl font-bold text-white">{tier.name ?? ''}</h3>
-                  <div className="mt-4 flex items-baseline gap-2">
-                    <span className="font-display text-5xl font-bold text-gradient-gold">{tier.price_label ?? ''}</span>
+                  <div className="mt-6 flex items-baseline gap-1">
+                    <span className="text-5xl lg:text-6xl font-display font-bold text-white"><span className="text-gold-400">₹</span>{tier.price_label?.replace('₹', '') ?? ''}</span>
                     <span className="text-sm text-stone-400">/ {tier.period ?? ''}</span>
                   </div>
-                  <p className="mt-3 text-sm text-stone-400">
-                    <span className="text-stone-300">Best for:</span> {tier.description ?? ''}
-                  </p>
-                  <ul className="mt-6 space-y-3 border-t border-white/[0.06] pt-6">
+                  
+                  <p className="mt-4 text-sm text-stone-400">{tier.description ?? ''}</p>
+                  
+                  <ul className="mt-8 space-y-4 border-t border-white/[0.08] pt-8">
                     {(tier.features ?? []).map((h) => (
-                      <li key={h} className="flex items-start gap-2.5 text-sm text-stone-200">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-gold-400" />
+                      <li key={h} className="flex items-center gap-3 text-sm text-stone-200">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gold-500 text-black text-xs font-bold">✓</div>
                         <span>{h}</span>
                       </li>
                     ))}
                   </ul>
+
                   {tier.delivery_note && (
-                    <div className="mt-6 flex items-center gap-2 rounded-xl border border-white/[0.06] bg-ink-900/40 p-3">
-                      <Truck className="h-4 w-4 text-gold-300" />
+                    <div className="mt-8 flex items-center gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] p-4">
+                      <Truck className="h-5 w-5 text-gold-300" />
                       <div>
                         <div className="text-[10px] uppercase tracking-[0.15em] text-stone-500">Delivery</div>
                         <div className="text-xs font-medium text-stone-200">{tier.delivery_note}</div>
                       </div>
                     </div>
                   )}
-                  <a href="#contact"
-                    className={`mt-7 flex w-full items-center justify-center gap-2 rounded-full py-3.5 text-sm font-semibold transition-all active:scale-95 ${
-                      tier.is_popular
-                        ? 'bg-gold-gradient text-ink-950 shadow-gold hover:shadow-gold-glow hover:scale-[1.02]'
-                        : 'border border-gold-500/30 bg-gold-500/[0.05] text-gold-100 hover:border-gold-400 hover:bg-gold-500/15'
-                    }`}>
-                    Request Quote <ArrowUpRight className="h-4 w-4" />
+                  
+                  <a href="#contact" className="mt-8 inline-flex w-full items-center justify-center rounded-full bg-gold-gradient py-4 text-base font-bold text-black transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(198,146,33,0.45)]">
+                    Book This Package
                   </a>
                 </div>
               </Reveal>
             ))}
           </RevealScope>
         ) : (
-          /* Comparison table */
+          /* Simplified Comparison view */
           <Reveal className="mt-12 overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse">
+            <table className="w-full border-collapse text-sm">
               <thead>
                 <tr>
-                  <th className="pb-4 text-left text-xs font-semibold uppercase tracking-[0.2em] text-stone-400 pr-6">Feature</th>
-                  {pricing.map((tier) => (
-                    <th key={tier.id} className="pb-4 text-center">
-                      <div className={`inline-flex flex-col items-center gap-1 rounded-2xl px-4 py-3 ${tier.is_popular ? 'bg-gold-gradient text-ink-950' : 'border border-white/10 text-white'}`}>
-                        <span className="font-display text-sm font-bold">{tier.name ?? ''}</span>
-                        <span className="text-xs opacity-80">{tier.price_label ?? ''}</span>
-                      </div>
-                    </th>
-                  ))}
+                  <th className="p-4 text-left text-stone-400">Feature</th>
+                  {items.map(t => <th key={t.id} className="p-4 text-gold-300">{t.name}</th>)}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.05]">
-                {/* Collect all unique features */}
-                {Array.from(new Set(items.flatMap((t) => t.features ?? []))).map((feature) => (
-                  <tr key={feature} className="group hover:bg-white/[0.02]">
-                    <td className="py-3.5 pr-6 text-sm text-stone-300">{feature}</td>
-                    {items.map((tier) => (
-                      <td key={tier.id} className="py-3.5 text-center">
-                        {(tier.features ?? []).includes(feature)
-                          ? <CheckCircle2 className="inline h-5 w-5 text-gold-400" />
-                          : <X className="inline h-4 w-4 text-stone-700" />
-                        }
-                      </td>
+              <tbody className="divide-y divide-white/10">
+                {Array.from(new Set(items.flatMap(t => t.features ?? []))).map(f => (
+                  <tr key={f}>
+                    <td className="p-4 text-stone-300">{f}</td>
+                    {items.map(t => (
+                      <td key={t.id} className="p-4 text-center">{t.features?.includes(f) ? '✓' : '—'}</td>
                     ))}
                   </tr>
                 ))}
               </tbody>
-              <tfoot>
-                <tr>
-                  <td />
-                  {items.map((tier) => (
-                    <td key={tier.id} className="pt-6 text-center">
-                      <a href="#contact"
-                        className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-xs font-semibold transition-all ${
-                          tier.is_popular
-                            ? 'bg-gold-gradient text-ink-950'
-                            : 'border border-gold-500/30 text-gold-100 hover:border-gold-400'
-                        }`}>
-                        Select <ArrowUpRight className="h-3.5 w-3.5" />
-                      </a>
-                    </td>
-                  ))}
-                </tr>
-              </tfoot>
             </table>
           </Reveal>
         )}
 
-        <Reveal className="mt-10 text-center">
-          <p className="text-sm text-stone-400">Prices are indicative. Final quotes depend on footage length, complexity, and turnaround.</p>
+        <Reveal className="mt-12 text-center">
+          <p className="text-sm text-stone-500">Prices are indicative. Final quotes depend on footage length, complexity, and turnaround.</p>
         </Reveal>
       </div>
     </section>
   );
-}
+      }
