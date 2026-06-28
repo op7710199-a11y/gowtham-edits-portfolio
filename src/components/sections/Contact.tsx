@@ -43,49 +43,56 @@ export function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const nextErrors = validate(form);
     setErrors(nextErrors);
+
     if (Object.keys(nextErrors).length > 0) return;
 
-    setStatus('submitting');
+    setStatus("submitting");
+
     try {
       // 1. Save Inquiry
-      const { error: inquiryError } = await supabase.from('inquiries').insert([{
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        whatsapp: form.whatsapp,
-        service: form.service,
-        project_type: form.project_type,
-        budget_range: form.budget_range,
-        delivery_deadline: form.delivery_deadline,
-        message: form.message,
-        source: 'website',
-        status: 'new',
-        created_at: new Date().toISOString()
-      }]);
+      const { data: inquiryData, error: inquiryError } = await supabase
+        .from("inquiries")
+        .insert([{
+          name: form.name,
+          email: form.email,
+          phone: form.phone || null,
+          whatsapp: form.whatsapp || null,
+          service: form.service || null,
+          project_type: form.project_type || null,
+          budget_range: form.budget_range || null,
+          delivery_deadline: form.delivery_deadline || null,
+          message: form.message,
+          status: "new",
+          source: "website",
+          created_at: new Date().toISOString()
+        }])
+        .select();
 
       if (inquiryError) throw inquiryError;
 
       // 2. Save AI Lead
-      const { error: aiError } = await supabase.from('ai_requests').insert([{
-        tool_type: 'contact_form',
+      const { error: aiError } = await supabase.from("ai_requests").insert([{
+        tool_type: "contact_form",
         name: form.name,
         email: form.email,
-        service: form.service,
+        service: form.service || null,
         generated_brief: form.message,
-        status: 'new'
+        status: "new",
+        created_at: new Date().toISOString()
       }]);
 
       if (aiError) throw aiError;
 
-      setStatus('success');
+      setStatus("success");
       setForm({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
       setErrors({});
     } catch (err) {
-      console.error(err);
-      alert(err instanceof Error ? err.message : JSON.stringify(err));
-      setStatus('error');
+      console.error("Submission Error:", err);
+      alert(err instanceof Error ? err.message : "Failed to send message.");
+      setStatus("error");
     }
   };
 
@@ -145,4 +152,4 @@ export function Contact() {
       </div>
     </section>
   );
-}
+                        }
