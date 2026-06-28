@@ -15,7 +15,12 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
 
   const showImage = !textOnly && logoUrl && !imgFailed;
   const inner = showImage ? (
-    <ImageLogo src={logoUrl} height={height} compact={compact} onFail={() => setImgFailed(true)} />
+    <ImageLogo 
+      src={logoUrl ? `${logoUrl}?v=${Date.now()}` : ""} 
+      height={height} 
+      compact={compact} 
+      onFail={() => setImgFailed(true)} 
+    />
   ) : (
     <TextLogo compact={compact} height={height} />
   );
