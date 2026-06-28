@@ -436,7 +436,7 @@ export const WHY_CHOOSE = [
 
 export const INSTAGRAM_HANDLE = 'gowtham.edits1';
 export const INSTAGRAM_URL = 'https://www.instagram.com/gowtham.edits1';
-export const WHATSAPP_NUMBER = 'XXXXXXXXXX';
-export const WHATSAPP_DISPLAY = '+91 90000 00000';
-export const EMAIL = 'hello@gowthamedits.com';
-export const LOCATION = 'Bengaluru, India • Worldwide remote';
+export const WHATSAPP_NUMBER = '9676831437';
+export const WHATSAPP_DISPLAY = '+91 96768 31437';
+export const EMAIL = 'gowthamedits37@gmail.com';
+export const LOCATION = 'Hyderabad, Telangana, India, Worldwide';
