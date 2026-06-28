@@ -1,5 +1,5 @@
-import { MessageCircle, Instagram, Mail, MapPin, Send, Loader2, CheckCircle2, AlertCircle, Youtube, Facebook, Linkedin } from 'lucide-react';
-import { Reveal, RevealScope, SectionHeading } from '../Reveal';
+import { MessageCircle, Mail, MapPin, CheckCircle2 } from 'lucide-react';
+import { SectionHeading } from '../Reveal';
 import { useSiteSettings } from '../../hooks/useSupabaseQueries';
 import { supabase } from '../../lib/supabase';
 import { useState } from 'react';
@@ -22,8 +22,6 @@ function validate(values: { name: string; email: string; message: string }): For
 const SERVICE_OPTIONS = ['Wedding Video Editing', 'Haldi Highlights', 'Pre-Wedding Cinematics', 'Bike Cinematic Editing', 'Instagram Reels Editing', 'YouTube Video Editing', 'Color Grading', 'Motion Graphics', 'Custom Editing Services'];
 
 const FALLBACK_CONTACT = {
-  instagram_url: 'https://www.instagram.com/gowtham.edits1',
-  instagram_handle: 'gowtham.edits1',
   whatsapp_number: '9676831437',
   whatsapp_display: '+91 96768 31437',
   email: 'gowthamedits37@gmail.com',
@@ -33,6 +31,7 @@ const FALLBACK_CONTACT = {
 export function Contact() {
   const { data: settings } = useSiteSettings();
   const s = { ...FALLBACK_CONTACT, ...Object.fromEntries(Object.entries(settings ?? {}).map(([k, v]) => [k, typeof v === 'string' ? v : String(v)])) };
+  
   const [form, setForm] = useState({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<Status>('idle');
@@ -50,10 +49,42 @@ export function Contact() {
 
     setStatus('submitting');
     try {
-      const { error } = await supabase.from('inquiries').insert({ ...form, source: 'website' });
-      if (error) throw error;
+      // 1. Save Inquiry
+      const { error: inquiryError } = await supabase.from('inquiries').insert([{
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        whatsapp: form.whatsapp,
+        service: form.service,
+        project_type: form.project_type,
+        budget_range: form.budget_range,
+        delivery_deadline: form.delivery_deadline,
+        message: form.message,
+        source: 'website',
+        status: 'new',
+        created_at: new Date().toISOString()
+      }]);
+
+      if (inquiryError) throw inquiryError;
+
+      // 2. Save AI Lead
+      const { error: aiError } = await supabase.from('ai_requests').insert([{
+        tool_type: 'contact_form',
+        name: form.name,
+        email: form.email,
+        service: form.service,
+        generated_brief: form.message,
+        status: 'new'
+      }]);
+
+      if (aiError) throw aiError;
+
       setStatus('success');
+      setForm({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
+      setErrors({});
     } catch (err) {
+      console.error(err);
+      alert(err instanceof Error ? err.message : JSON.stringify(err));
       setStatus('error');
     }
   };
@@ -62,11 +93,10 @@ export function Contact() {
 
   return (
     <section id="contact" className="section-padding relative overflow-hidden">
-      <div className="pointer-events-none absolute left-0 top-1/4 -z-10 h-[35vh] w-[35vh] rounded-full bg-gold-500/10 blur-[120px]" />
       <div className="container-mx">
         <SectionHeading
           eyebrow="LET'S CREATE"
-          title={<>Start Your <span className="text-gradient-gold"> Next Masterpiece</span></>}
+          title={<>Start Your <span className="text-gradient-gold">Next Masterpiece</span></>}
           subtitle="Tell me about your project and I'll transform it into a cinematic experience."
         />
 
