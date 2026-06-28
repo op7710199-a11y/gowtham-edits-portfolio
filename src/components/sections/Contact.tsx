@@ -24,10 +24,10 @@ const SERVICE_OPTIONS = ['Wedding Video Editing', 'Haldi Highlights', 'Pre-Weddi
 const FALLBACK_CONTACT = {
   instagram_url: 'https://www.instagram.com/gowtham.edits1',
   instagram_handle: 'gowtham.edits1',
-  whatsapp_number: 'XXXXXXXXXX',
-  whatsapp_display: '+91 90000 00000',
-  email: 'hello@gowthamedits.com',
-  location: 'Bengaluru, India • Worldwide remote',
+  whatsapp_number: '9676831437',
+  whatsapp_display: '+91 96768 31437',
+  email: 'gowthamedits37@gmail.com',
+  location: 'Hyderabad, Telangana, India, Worldwide',
 };
 
 export function Contact() {
