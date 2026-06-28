@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { ChevronRight, Play, MessageCircle, Sparkles } from 'lucide-react';
 import { useCountUp } from '../../hooks';
 import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
+import { Logo } from '../ui/Logo'; // Updated import
 
 function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
   const { ref, value: v } = useCountUp(value, 2000);
@@ -124,10 +125,12 @@ export function Hero() {
       <div className="container-mx min-h-[100svh] flex items-center py-32">
         <div className="grid w-full items-center gap-16 lg:grid-cols-2">
           
-          {/* Left Column Content */}
           <div className="max-w-2xl">
             <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-              <img src="/logo.png" alt="Gowtham Edits" className="w-[240px] md:w-[320px] drop-shadow-[0_0_40px_rgba(198,146,33,0.35)]" />
+              <Logo
+                height={120}
+                className="drop-shadow-[0_0_40px_rgba(198,146,33,0.35)]"
+              />
             </div>
 
             <div className={`mt-8 transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`} style={{ transitionDelay: '150ms' }}>
@@ -180,7 +183,6 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Column Image Card */}
           <div className="relative hidden lg:flex items-center justify-center">
             <div className="absolute h-[520px] w-[520px] rounded-full bg-gold-500/10 blur-[120px]" />
             <div className="relative overflow-hidden rounded-[36px] border border-gold-500/20 bg-white/5 backdrop-blur-2xl shadow-[0_30px_120px_rgba(0,0,0,.5)]">
