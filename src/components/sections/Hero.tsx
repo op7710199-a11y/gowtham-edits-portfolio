@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { ChevronRight, Play, MessageCircle, Sparkles } from 'lucide-react';
 import { useCountUp } from '../../hooks';
 import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
-import { Logo } from '../ui/Logo'; // Updated import
+import { Logo } from '../Logo'; // Updated import path
 
 function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
   const { ref, value: v } = useCountUp(value, 2000);
