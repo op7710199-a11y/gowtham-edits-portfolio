@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { ChevronRight, Play, MessageCircle, Sparkles } from 'lucide-react';
 import { useCountUp } from '../../hooks';
 import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
-import { Logo } from '../Logo'; // Updated import path
+import { Logo } from '../Logo';
 
 function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
   const { ref, value: v } = useCountUp(value, 2000);
@@ -91,6 +91,7 @@ export function Hero() {
 
   return (
     <section ref={sectionRef} id="home" className="relative isolate min-h-[100svh] overflow-hidden">
+      {/* Background Media */}
       <div className="absolute inset-0 -z-10">
         <img
           src={safeHero.bg_image_url || 'https://images.pexels.com/photos/3014019/pexels-photo-3014019.jpeg?auto=compress&cs=tinysrgb&w=1920'}
@@ -128,8 +129,8 @@ export function Hero() {
           <div className="max-w-2xl">
             <div className={`transition-all duration-1000 ease-cinematic ${revealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
               <Logo
-                height={120}
-                className="drop-shadow-[0_0_40px_rgba(198,146,33,0.35)]"
+                height={80}
+                className="drop-shadow-[0_0_30px_rgba(198,146,33,0.25)]"
               />
             </div>
 
