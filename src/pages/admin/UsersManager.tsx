@@ -97,7 +97,7 @@ export function UsersManager() {
   const columns: Column<Profile>[] = [
     { key: 'full_name', label: 'Name', render: (r) => (
       <div className="flex items-center gap-3">
-        <div className="grid h-8 w-8 place-items-center rounded-full bg-gold-gradient text-xs font-bold text-ink-950">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gold-gradient text-xs font-bold text-ink-950">
           {(r.full_name || r.email || 'U')[0].toUpperCase()}
         </div>
         <div>
@@ -130,7 +130,12 @@ export function UsersManager() {
       <PageHeader title="Users" subtitle="Manage team access." action={<button onClick={() => setInviteOpen(true)} className="btn-primary py-2.5"><Plus className="h-4 w-4" /> Invite</button>} />
       
       <div className="p-6">
-        <DataTable data={users} columns={columns} loading={loading} />
+        <DataTable
+          rows={users}
+          columns={columns}
+          loading={loading}
+          emptyMessage="No users found."
+        />
       </div>
 
       <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Invite New User">
@@ -139,8 +144,6 @@ export function UsersManager() {
           <button onClick={inviteUser} className="w-full btn-primary py-3">Invite</button>
         </div>
       </Modal>
-
-      {/* Other Modals (Edit Role, Reset Password, Confirm Deactivate) would follow this pattern */}
     </div>
   );
 }
