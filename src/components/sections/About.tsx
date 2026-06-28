@@ -1,5 +1,5 @@
 import { Quote, Instagram, MessageCircle, ArrowRight } from 'lucide-react';
-import { Reveal, SectionHeading } from '../Reveal';
+import { SectionHeading } from '../Reveal';
 import { useAboutSettings } from '../../hooks/useSupabaseQueries';
 
 export function About() {
@@ -59,7 +59,7 @@ export function About() {
 
         <div className="mt-24 grid items-center gap-20 lg:grid-cols-[0.85fr_1.15fr]">
           {/* Portrait with circular glow */}
-          <Reveal>
+          <>
             <div className="relative mx-auto w-full max-w-md lg:max-w-lg">
               {/* Rotating gold ring */}
               <div
@@ -109,25 +109,25 @@ export function About() {
                 </a>
               )}
             </div>
-          </Reveal>
+          </>
 
           {/* Right column */}
           <div>
-            <Reveal>
+            <>
               <div className="mb-6">
                 <h3 className="text-4xl lg:text-5xl font-bold text-white font-display">{safeAbout.name || "Gowtham"}</h3>
                 <p className="mt-3 text-base uppercase tracking-[0.45em] text-gold-400">{safeAbout.title || "CINEMATIC FILM EDITOR"}</p>
               </div>
-            </Reveal>
+            </>
 
-            <Reveal>
+            <>
               <p className="text-base leading-relaxed text-stone-300 sm:text-lg">
                 {safeAbout.bio || "Professional cinematic editor specializing in wedding films, reels and commercial storytelling."}
               </p>
-            </Reveal>
+            </>
 
             {(safeAbout.skills ?? []).length > 0 && (
-              <Reveal className="mt-8">
+              <div className="mt-8">
                 <h4 className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-stone-400">Tools &amp; Expertise</h4>
                 <div className="mt-4 flex flex-wrap gap-3">
                   {(safeAbout.skills ?? []).map((s) => (
@@ -136,11 +136,11 @@ export function About() {
                     </span>
                   ))}
                 </div>
-              </Reveal>
+              </div>
             )}
 
             {safeAbout.quote && (
-              <Reveal className="mt-8">
+              <div className="mt-8">
                 <div className="relative overflow-hidden rounded-2xl border border-gold-500/15 bg-gradient-to-br from-ink-900/60 to-ink-950/40 p-6">
                   <Quote className="absolute -right-2 -top-2 h-16 w-16 text-gold-500/10" />
                   <blockquote className="relative font-display text-base italic text-stone-200 sm:text-lg">
@@ -152,11 +152,11 @@ export function About() {
                     </cite>
                   )}
                 </div>
-              </Reveal>
+              </div>
             )}
 
             {safeAbout.cta_text && (
-              <Reveal className="mt-8">
+              <div className="mt-8">
                 <a
                   href="#contact"
                   className="group inline-flex items-center gap-2 rounded-full bg-gold-gradient px-8 py-4 text-base font-semibold text-ink-950 transition-all hover:shadow-[0_0_30px_rgba(198,146,33,0.4)]"
@@ -164,7 +164,7 @@ export function About() {
                   {safeAbout.cta_text}
                   <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </a>
-              </Reveal>
+              </div>
             )}
           </div>
         </div>
