@@ -17,11 +17,10 @@ export function UsersManager() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [inviteForm, setInviteForm] = useState({ email: '', full_name: '', password: DEFAULT_TEMP_PASSWORD, role: 'editor' as UserRole });
+  const [inviteForm, setInviteForm] = useState({ email: '', full_name: '', role: 'editor' as UserRole });
   const [editTarget, setEditTarget] = useState<Profile | null>(null);
   const [editRole, setEditRole] = useState<UserRole>('editor');
   const [resetTarget, setResetTarget] = useState<Profile | null>(null);
-  const [resetting, setResetting] = useState(false);
   const [deactivateTarget, setDeactivateTarget] = useState<Profile | null>(null);
   const log = useActivityLog();
 
@@ -43,8 +42,8 @@ export function UsersManager() {
   }, []);
 
   const inviteUser = async () => {
-    if (!inviteForm.email.trim() || !inviteForm.password) {
-      setFormError('Email and password are required.');
+    if (!inviteForm.email.trim()) {
+      setFormError('Email is required.');
       return;
     }
     setSaving(true);
@@ -52,7 +51,7 @@ export function UsersManager() {
     try {
       const { data, error: err } = await supabase.auth.signUp({
         email: inviteForm.email.trim(),
-        password: inviteForm.password,
+        password: DEFAULT_TEMP_PASSWORD,
         options: { data: { full_name: inviteForm.full_name } },
       });
       if (err) throw err;
@@ -65,7 +64,7 @@ export function UsersManager() {
       }
       await fetchUsers();
       setInviteOpen(false);
-      setInviteForm({ email: '', full_name: '', password: DEFAULT_TEMP_PASSWORD, role: 'editor' });
+      setInviteForm({ email: '', full_name: '', role: 'editor' });
     } catch (e: any) {
       setFormError(e.message || 'Invite failed');
     } finally {
@@ -88,11 +87,6 @@ export function UsersManager() {
     }
   };
 
-  const resetPassword = async () => {
-    alert("Password reset must be performed via Supabase Auth Admin API (Edge Function).");
-    setResetTarget(null);
-  };
-
   const toggleActive = async (user: Profile) => {
     await supabase.from('profiles').update({ is_active: !user.is_active }).eq('id', user.id);
     await log('update', 'user', user.id, { is_active: !user.is_active });
@@ -103,12 +97,12 @@ export function UsersManager() {
   const columns: Column<Profile>[] = [
     { key: 'full_name', label: 'Name', render: (r) => (
       <div className="flex items-center gap-3">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gold-gradient text-xs font-bold text-ink-950">
+        <div className="grid h-8 w-8 place-items-center rounded-full bg-gold-gradient text-xs font-bold text-ink-950">
           {(r.full_name || r.email || 'U')[0].toUpperCase()}
         </div>
-        <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-white">{r.full_name || 'Unnamed'}</div>
-          <div className="truncate text-xs text-stone-500">{r.email}</div>
+        <div>
+          <div className="text-sm font-semibold text-white">{r.full_name || 'Unnamed'}</div>
+          <div className="text-xs text-stone-500">{r.email}</div>
         </div>
       </div>
     )},
@@ -120,14 +114,14 @@ export function UsersManager() {
     { key: 'is_active', label: 'Status', render: (r) => <StatusBadge value={r.is_active} trueLabel="Active" falseLabel="Suspended" /> },
     { key: 'actions', label: '', align: 'right', render: (r) =>
       r.id !== currentUser?.id ? (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-end gap-1">
           <button onClick={() => { setEditTarget(r); setEditRole(r.role); }} className="p-2 text-stone-400 hover:text-blue-400"><Shield className="h-4 w-4" /></button>
           <button onClick={() => setResetTarget(r)} className="p-2 text-stone-400 hover:text-amber-400"><KeyRound className="h-4 w-4" /></button>
           <button onClick={() => setDeactivateTarget(r)} className={`p-2 ${r.is_active ? 'text-stone-400 hover:text-red-400' : 'text-green-500'}`}>
             {r.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
           </button>
         </div>
-      ) : (<span className="text-[10px] text-stone-600">You</span>)
+      ) : null
     },
   ];
 
@@ -135,17 +129,18 @@ export function UsersManager() {
     <div>
       <PageHeader title="Users" subtitle="Manage team access." action={<button onClick={() => setInviteOpen(true)} className="btn-primary py-2.5"><Plus className="h-4 w-4" /> Invite</button>} />
       
-      {/* Debug Block - Remove after verification */}
-      <div className="p-6 bg-black border border-white/10 m-6 rounded-xl">
-        <h2 className="text-white text-sm font-bold mb-2">DEBUG: Raw Data</h2>
-        <pre className="text-white text-xs overflow-x-auto">{JSON.stringify(users, null, 2)}</pre>
-      </div>
-
       <div className="p-6">
         <DataTable data={users} columns={columns} loading={loading} />
       </div>
 
-      {/* Modals remain below as per previous structure */}
+      <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Invite New User">
+        <div className="space-y-4">
+          <input type="email" placeholder="Email" value={inviteForm.email} onChange={(e) => setInviteForm({...inviteForm, email: e.target.value})} className="w-full p-3 rounded-xl bg-ink-900 border border-white/10" />
+          <button onClick={inviteUser} className="w-full btn-primary py-3">Invite</button>
+        </div>
+      </Modal>
+
+      {/* Other Modals (Edit Role, Reset Password, Confirm Deactivate) would follow this pattern */}
     </div>
   );
 }
