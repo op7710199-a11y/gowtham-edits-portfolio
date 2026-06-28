@@ -13,9 +13,9 @@ const NAV_LINKS = [
 
 const FALLBACK = {
   instagram_url: 'https://www.instagram.com/gowtham.edits1',
-  email: 'hello@gowthamedits.com',
-  whatsapp_number: '+919676831437',
-  location: 'HYDRABAD, India',
+  email: 'gowthamedits37@gmail.com',
+  whatsapp_number: '+91 9676831437',
+  location: 'Hyderabad, Telangana, India, Worldwide',
 };
 
 export function Footer() {
