@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://gowthamedits.com/sitemap.xml
+Sitemap: https://gowthamedits.vercel.app/sitemap.xml
