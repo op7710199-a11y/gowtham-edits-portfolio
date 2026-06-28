@@ -4,22 +4,20 @@ import { queryKeys } from './useSupabaseQueries';
 
 export function useLogo() {
   const qc = useQueryClient();
-  const { data: logoUrl, isLoading: loading } = useQuery({
+
+  const { data: logoUrl = '', isLoading: loading } = useQuery({
     queryKey: queryKeys.logo,
-    queryFn: async () => {
-      try {
-        return await siteSettingsService.getLogoUrl();
-      } catch {
-        return '';
-      }
-    },
-    staleTime: 10 * 60 * 1000,
+    queryFn: () => siteSettingsService.getLogoUrl(),
+    staleTime: 0,
+    gcTime: 0,
     retry: 2,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: false,
   });
 
   const setLogoUrl = (url: string) => {
     qc.setQueryData(queryKeys.logo, url);
   };
 
-  return { logoUrl: logoUrl ?? '', loading, setLogoUrl };
+  return { logoUrl, loading, setLogoUrl };
 }
