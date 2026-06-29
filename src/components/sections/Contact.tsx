@@ -69,9 +69,13 @@ export function Contact() {
           created_at: new Date().toISOString()
         }]);
 
-      if (inquiryError) throw inquiryError;
+      if (inquiryError) {
+        console.error("Supabase Inquiry Error:", inquiryError);
+        alert(JSON.stringify(inquiryError, null, 2));
+        throw inquiryError;
+      }
 
-      /* // 2. Save AI Lead (Commented out to isolate inquiry table debugging)
+      /* // 2. Save AI Lead (Currently disabled for debugging)
       const { error: aiError } = await supabase.from("ai_requests").insert([{
         tool_type: "contact_form",
         name: form.name,
@@ -89,7 +93,7 @@ export function Contact() {
       setErrors({});
     } catch (err) {
       console.error("Submission Error:", err);
-      alert(err instanceof Error ? err.message : "Failed to send message.");
+      // Only alert generic message if we didn't already alert inside the inquiryError block
       setStatus("error");
     }
   };
