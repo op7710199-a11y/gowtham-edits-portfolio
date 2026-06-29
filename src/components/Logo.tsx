@@ -13,12 +13,11 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
   const { logoUrl } = useLogo();
   const [imgFailed, setImgFailed] = useState(false);
 
-  // showImage uses the stable logoUrl without cache-busting strings
   const showImage = !textOnly && logoUrl && !imgFailed;
   
   const inner = showImage ? (
     <ImageLogo 
-      src={logoUrl} 
+      src={logoUrl} // Stable URL without cache-busting
       height={height} 
       compact={compact} 
       onFail={() => setImgFailed(true)} 
@@ -27,7 +26,8 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
     <TextLogo compact={compact} height={height} />
   );
 
-  const base = `inline-flex items-center shrink-0 ${className}`;
+  // Changed to flex-none to ensure the logo never shrinks
+  const base = `inline-flex items-center flex-none ${className}`;
 
   if (href) {
     return (
@@ -58,8 +58,14 @@ function ImageLogo({ src, height, compact, onFail }: { src: string; height: numb
     <img 
       src={src} 
       alt="GOWTHAM EDITS" 
-      height={height} 
-      style={{ height, width: 'auto' }}
+      loading="eager"
+      decoding="async"
+      style={{
+        height,
+        width: "auto",
+        maxWidth: "100%",
+        display: "block"
+      }}
       className="object-contain" 
       draggable={false} 
       onError={onFail} 
