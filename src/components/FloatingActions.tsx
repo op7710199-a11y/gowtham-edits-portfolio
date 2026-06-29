@@ -2,12 +2,18 @@ import { useEffect, useState } from 'react';
 import { ArrowUp, MessageCircle } from 'lucide-react';
 import { useSiteSettings } from '../hooks/useSupabaseQueries';
 
-const FALLBACK_WHATSAPP = 'XXXXXXXXXX';
+const FALLBACK_WHATSAPP = '+91 96768 31437';
 
 export function FloatingWhatsApp() {
   const { data: settings } = useSiteSettings();
   const raw = (settings?.whatsapp_number as string) ?? FALLBACK_WHATSAPP;
-  const href = `https://wa.me/91${raw.replace(/[^0-9]/g, '')}`;
+
+  const phone = raw.replace(/\D/g, "");
+
+  const href = `https://wa.me/${
+    phone.startsWith("91") ? phone : `91${phone}`
+  }`;
+
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp"
       className="fixed bottom-[5.5rem] right-4 z-40 grid h-14 w-14 place-items-center rounded-full bg-[#25D366] text-white shadow-[0_10px_30px_-8px_rgba(37,211,102,0.6)] transition-all duration-500 hover:scale-110 active:scale-95 sm:bottom-6 sm:right-6">
@@ -17,17 +23,16 @@ export function FloatingWhatsApp() {
   );
 }
 
+// MobileCTABar and BackToTop components remain the same...
 export function MobileCTABar() {
   const [show, setShow] = useState(false);
   const [hide, setHide] = useState(false);
 
   useEffect(() => {
-    // Scroll visibility
     const onScroll = () => setShow(window.scrollY > 600);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    // Footer intersection observer
     const footer = document.querySelector("footer");
     const observer = footer ? new IntersectionObserver(
       ([entry]) => setHide(entry.isIntersecting),
