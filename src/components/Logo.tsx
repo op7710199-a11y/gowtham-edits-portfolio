@@ -1,156 +1,86 @@
-import { MessageCircle, Mail, MapPin, CheckCircle2 } from 'lucide-react';
-import { SectionHeading } from '../Reveal';
-import { useSiteSettings } from '../../hooks/useSupabaseQueries';
-import { supabase } from '../../lib/supabase';
 import { useState } from 'react';
+import { useLogo } from '../hooks/useLogo';
 
-type Status = 'idle' | 'submitting' | 'success' | 'error';
-interface FormErrors { name?: string; email?: string; message?: string; }
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function validate(values: { name: string; email: string; message: string }): FormErrors {
-  const errors: FormErrors = {};
-  if (!values.name.trim()) errors.name = 'Name is required';
-  else if (values.name.trim().length < 2) errors.name = 'Name must be at least 2 characters';
-  else if (!values.email.trim()) errors.email = 'Email is required';
-  else if (!EMAIL_RE.test(values.email.trim())) errors.email = 'Enter a valid email';
-  else if (!values.message.trim()) errors.message = 'Message is required';
-  else if (values.message.trim().length < 10) errors.message = 'Message must be at least 10 characters';
-  return errors;
+interface LogoProps {
+  height?: number;
+  className?: string;
+  compact?: boolean;
+  textOnly?: boolean;
+  href?: string;
 }
 
-const SERVICE_OPTIONS = ['Wedding Video Editing', 'Haldi Highlights', 'Pre-Wedding Cinematics', 'Bike Cinematic Editing', 'Instagram Reels Editing', 'YouTube Video Editing', 'Color Grading', 'Motion Graphics', 'Custom Editing Services'];
+export function Logo({ height = 48, className = '', compact = false, textOnly = false, href }: LogoProps) {
+  const { logoUrl } = useLogo();
+  const [imgFailed, setImgFailed] = useState(false);
 
-const FALLBACK_CONTACT = {
-  whatsapp_number: '9676831437',
-  whatsapp_display: '+91 96768 31437',
-  email: 'gowthamedits37@gmail.com',
-  location: 'Hyderabad, Telangana, India, Worldwide',
-};
-
-export function Contact() {
-  const { data: settings } = useSiteSettings();
-  const s = { ...FALLBACK_CONTACT, ...Object.fromEntries(Object.entries(settings ?? {}).map(([k, v]) => [k, typeof v === 'string' ? v : String(v)])) };
+  // showImage uses the stable logoUrl without cache-busting strings
+  const showImage = !textOnly && logoUrl && !imgFailed;
   
-  const [form, setForm] = useState({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [status, setStatus] = useState<Status>('idle');
+  const inner = showImage ? (
+    <ImageLogo 
+      src={logoUrl} 
+      height={height} 
+      compact={compact} 
+      onFail={() => setImgFailed(true)} 
+    />
+  ) : (
+    <TextLogo compact={compact} height={height} />
+  );
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: value }));
-  };
+  const base = `inline-flex items-center shrink-0 ${className}`;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  if (href) {
+    return (
+      <a href={href} className={base} aria-label="GOWTHAM EDITS — home">
+        {inner}
+      </a>
+    );
+  }
+  return <span className={base}>{inner}</span>;
+}
 
-    const nextErrors = validate(form);
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-
-    setStatus("submitting");
-
-    try {
-      // 1. Save Inquiry (Primary Lead Capture)
-      const { error: inquiryError } = await supabase
-        .from("inquiries")
-        .insert([{
-          name: form.name,
-          email: form.email,
-          phone: form.phone || null,
-          whatsapp: form.whatsapp || null,
-          service: form.service || null,
-          project_type: form.project_type || null,
-          budget_range: form.budget_range || null,
-          delivery_deadline: form.delivery_deadline || null,
-          message: form.message,
-          status: "new",
-          source: "website",
-          created_at: new Date().toISOString()
-        }]);
-
-      if (inquiryError) {
-        console.error("Supabase Inquiry Error:", inquiryError);
-        alert(JSON.stringify(inquiryError, null, 2));
-        throw inquiryError;
-      }
-
-      /* // 2. Save AI Lead (Commented out to isolate inquiry table debugging)
-      const { error: aiError } = await supabase.from("ai_requests").insert([{
-        tool_type: "contact_form",
-        name: form.name,
-        email: form.email,
-        service: form.service || null,
-        generated_brief: form.message,
-        status: "new",
-        created_at: new Date().toISOString()
-      }]);
-      if (aiError) throw aiError;
-      */
-
-      setStatus("success");
-      setForm({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
-      setErrors({});
-    } catch (err) {
-      console.error("Submission Error:", err);
-      setStatus("error");
-    }
-  };
-
-  const inputClass = "w-full rounded-2xl border border-gold-500/20 bg-black/40 px-6 py-5 text-white backdrop-blur-md outline-none transition-all duration-500 focus:border-gold-400 focus:ring-2 focus:ring-gold-500/20";
-
+function ImageLogo({ src, height, compact, onFail }: { src: string; height: number; compact: boolean; onFail: () => void }) {
+  if (compact) {
+    return (
+      <img 
+        src={src} 
+        alt="GOWTHAM EDITS logo" 
+        width={height} 
+        height={height}
+        className="rounded-xl object-contain" 
+        style={{ height, width: height }} 
+        draggable={false} 
+        onError={onFail} 
+      />
+    );
+  }
   return (
-    <section id="contact" className="section-padding relative overflow-hidden">
-      <div className="container-mx">
-        <SectionHeading
-          eyebrow="LET'S CREATE"
-          title={<>Start Your <span className="text-gradient-gold">Next Masterpiece</span></>}
-          subtitle="Tell me about your project and I'll transform it into a cinematic experience."
-        />
+    <img 
+      src={src} 
+      alt="GOWTHAM EDITS" 
+      height={height} 
+      style={{ height, width: 'auto' }}
+      className="object-contain" 
+      draggable={false} 
+      onError={onFail} 
+    />
+  );
+}
 
-        <div className="mt-20 grid gap-12 lg:grid-cols-[1fr_1.5fr]">
-          <div className="space-y-6">
-            {[ 
-              { icon: MessageCircle, label: 'WhatsApp', value: s.whatsapp_display, href: `https://wa.me/${s.whatsapp_number}` },
-              { icon: Mail, label: 'Email', value: s.email, href: `mailto:${s.email}` },
-              { icon: MapPin, label: 'Location', value: s.location }
-            ].map((c, i) => (
-              <a key={i} href={c.href || '#'} className="flex items-center gap-6 rounded-[24px] border border-white/5 bg-white/5 p-6 transition hover:border-gold-500/30">
-                <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gold-500/10 text-gold-400"><c.icon className="h-7 w-7" /></div>
-                <div>
-                  <div className="text-xs uppercase tracking-widest text-stone-500">{c.label}</div>
-                  <div className="text-lg font-bold text-white">{c.value}</div>
-                </div>
-              </a>
-            ))}
-          </div>
-
-          <form onSubmit={handleSubmit} className="rounded-[32px] border border-white/5 bg-white/[0.02] p-8 sm:p-10">
-            {status === 'success' ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="mb-6 grid h-20 w-20 place-items-center rounded-full bg-green-500/10 text-green-400"><CheckCircle2 className="h-10 w-10" /></div>
-                <h3 className="text-2xl font-bold text-white">Message sent!</h3>
-                <p className="mt-2 text-stone-400">I'll get back to you within 24 hours.</p>
-              </div>
-            ) : (
-              <div className="grid gap-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <input type="text" name="name" value={form.name} onChange={handleChange} placeholder="Full Name" className={inputClass} />
-                  <input type="email" name="email" value={form.email} onChange={handleChange} placeholder="Email Address" className={inputClass} />
-                </div>
-                <select name="service" value={form.service} onChange={handleChange} className={inputClass}>
-                  <option value="">Select Service</option>
-                  {SERVICE_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-                <textarea name="message" value={form.message} onChange={handleChange} placeholder="Tell me about your vision..." className={`${inputClass} min-h-[180px]`} />
-                <button type="submit" disabled={status === 'submitting'} className="w-full rounded-full bg-gold-gradient py-5 text-lg font-bold text-black transition-all duration-500 hover:scale-[1.02] hover:shadow-[0_0_50px_rgba(198,146,33,.45)]">
-                  {status === 'submitting' ? 'Sending...' : 'Send Message'}
-                </button>
-              </div>
-            )}
-          </form>
-        </div>
-      </div>
-    </section>
+function TextLogo({ compact, height }: { compact: boolean; height: number }) {
+  if (compact) {
+    return (
+      <span className="grid place-items-center rounded-xl bg-ink-950 font-display font-black text-white"
+        style={{ height, width: height, fontSize: height * 0.35 }}>
+        G<span className="text-gold-400">E</span>
+      </span>
+    );
+  }
+  const size = Math.max(14, Math.round(height * 0.45));
+  return (
+    <span className="flex flex-col leading-none" style={{ fontSize: size }}>
+      <span className="font-display font-extrabold text-white">Gowtham</span>
+      <span className="font-display font-extrabold text-gold-400" style={{ fontSize: size * 0.9 }}>edits</span>
+    </span>
   );
 }
