@@ -12,22 +12,25 @@ interface LogoProps {
 export function Logo({ height = 48, className = '', compact = false, textOnly = false, href }: LogoProps) {
   const { logoUrl } = useLogo();
   const [imgFailed, setImgFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
 
-  // showImage uses the stable logoUrl without cache-busting strings
-  const showImage = !textOnly && logoUrl && !imgFailed;
+  // Strict validation: Ensures logoUrl is a valid HTTPS string before attempting render
+  const validLogo = typeof logoUrl === 'string' && logoUrl.startsWith('https://');
+  const showImage = !textOnly && validLogo && !imgFailed;
   
   const inner = showImage ? (
     <ImageLogo 
       src={logoUrl} 
+      retry={retry}
       height={height} 
       compact={compact} 
-      onFail={() => setImgFailed(true)} 
+      onFail={() => setImgFailed(true)}
+      onRetry={() => setRetry((r) => r + 1)}
     />
   ) : (
     <TextLogo compact={compact} height={height} />
   );
 
-  // Added flex-none to ensure the logo never shrinks
   const base = `inline-flex items-center flex-none ${className}`;
 
   if (href) {
@@ -40,16 +43,30 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
   return <span className={base}>{inner}</span>;
 }
 
-function ImageLogo({ src, height, compact, onFail }: { src: string; height: number; compact: boolean; onFail: () => void }) {
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error("Logo load failed:", e.currentTarget.src);
-    onFail();
+function ImageLogo({ src, retry, height, compact, onFail, onRetry }: { 
+  src: string; 
+  retry: number; 
+  height: number; 
+  compact: boolean; 
+  onFail: () => void;
+  onRetry: () => void;
+}) {
+  const handleImageError = () => {
+    if (retry < 1) {
+      onRetry(); // Trigger one retry
+    } else {
+      console.error("Logo permanently failed after retry:", src);
+      onFail(); // Fallback to text logo
+    }
   };
+
+  // Append retry parameter only if it's the second attempt
+  const imgSrc = retry ? `${src}${src.includes('?') ? '&' : '?'}retry=${retry}` : src;
 
   if (compact) {
     return (
       <img 
-        src={src} 
+        src={imgSrc} 
         alt="GOWTHAM EDITS logo" 
         width={height} 
         height={height}
@@ -60,9 +77,10 @@ function ImageLogo({ src, height, compact, onFail }: { src: string; height: numb
       />
     );
   }
+
   return (
     <img 
-      src={src} 
+      src={imgSrc} 
       alt="GOWTHAM EDITS" 
       loading="eager"
       decoding="async"
