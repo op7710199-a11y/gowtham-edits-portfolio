@@ -14,7 +14,7 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
   const [imgFailed, setImgFailed] = useState(false);
   const [retry, setRetry] = useState(0);
 
-  // Strict validation: Ensures logoUrl is a valid HTTPS string before attempting render
+  // Validate that it's a real URL
   const validLogo = typeof logoUrl === 'string' && logoUrl.startsWith('https://');
   const showImage = !textOnly && validLogo && !imgFailed;
   
@@ -34,65 +34,30 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
   const base = `inline-flex items-center flex-none ${className}`;
 
   if (href) {
-    return (
-      <a href={href} className={base} aria-label="GOWTHAM EDITS — home">
-        {inner}
-      </a>
-    );
+    return <a href={href} className={base} aria-label="GOWTHAM EDITS — home">{inner}</a>;
   }
   return <span className={base}>{inner}</span>;
 }
 
-function ImageLogo({ src, retry, height, compact, onFail, onRetry }: { 
-  src: string; 
-  retry: number; 
-  height: number; 
-  compact: boolean; 
-  onFail: () => void;
-  onRetry: () => void;
-}) {
-  const handleImageError = () => {
-    if (retry < 1) {
-      onRetry(); // Trigger one retry
+function ImageLogo({ src, retry, height, onFail, onRetry }: any) {
+  const handleError = () => {
+    if (retry < 2) {
+      onRetry();
     } else {
-      console.error("Logo permanently failed after retry:", src);
-      onFail(); // Fallback to text logo
+      onFail();
     }
   };
 
-  // Append retry parameter only if it's the second attempt
-  const imgSrc = retry ? `${src}${src.includes('?') ? '&' : '?'}retry=${retry}` : src;
-
-  if (compact) {
-    return (
-      <img 
-        src={imgSrc} 
-        alt="GOWTHAM EDITS logo" 
-        width={height} 
-        height={height}
-        className="rounded-xl object-contain" 
-        style={{ height, width: height }} 
-        draggable={false} 
-        onError={handleImageError} 
-      />
-    );
-  }
-
   return (
     <img 
-      src={imgSrc} 
+      src={retry ? `${src}?retry=${retry}` : src} 
       alt="GOWTHAM EDITS" 
       loading="eager"
       decoding="async"
-      style={{
-        height,
-        width: "auto",
-        maxWidth: "100%",
-        display: "block"
-      }}
+      style={{ height, width: "auto", maxWidth: "100%", display: "block" }}
       className="object-contain" 
       draggable={false} 
-      onError={handleImageError} 
+      onError={handleError} 
     />
   );
 }
