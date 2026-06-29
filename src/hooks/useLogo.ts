@@ -9,7 +9,7 @@ export function useLogo() {
     queryKey: queryKeys.logo,
     queryFn: () => siteSettingsService.getLogoUrl(),
     staleTime: 1000 * 60 * 60, // 1 hour
-    gcTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60,    // 1 hour
     retry: 2,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
