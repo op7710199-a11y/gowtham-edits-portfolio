@@ -46,13 +46,12 @@ export function Contact() {
 
     const nextErrors = validate(form);
     setErrors(nextErrors);
-
     if (Object.keys(nextErrors).length > 0) return;
 
     setStatus("submitting");
 
     try {
-      // 1. Save Inquiry
+      // 1. Save Inquiry (Primary Lead Capture)
       const { error: inquiryError } = await supabase
         .from("inquiries")
         .insert([{
@@ -72,7 +71,7 @@ export function Contact() {
 
       if (inquiryError) throw inquiryError;
 
-      // 2. Save AI Lead
+      /* // 2. Save AI Lead (Commented out to isolate inquiry table debugging)
       const { error: aiError } = await supabase.from("ai_requests").insert([{
         tool_type: "contact_form",
         name: form.name,
@@ -82,8 +81,8 @@ export function Contact() {
         status: "new",
         created_at: new Date().toISOString()
       }]);
-
       if (aiError) throw aiError;
+      */
 
       setStatus("success");
       setForm({ name: '', email: '', phone: '', whatsapp: '', service: '', project_type: '', budget_range: '', delivery_deadline: '', message: '' });
@@ -151,4 +150,4 @@ export function Contact() {
       </div>
     </section>
   );
-      }
+}
