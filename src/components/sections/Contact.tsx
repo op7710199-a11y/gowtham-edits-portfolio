@@ -53,7 +53,7 @@ export function Contact() {
 
     try {
       // 1. Save Inquiry
-      const { data: inquiryData, error: inquiryError } = await supabase
+      const { error: inquiryError } = await supabase
         .from("inquiries")
         .insert([{
           name: form.name,
@@ -68,8 +68,7 @@ export function Contact() {
           status: "new",
           source: "website",
           created_at: new Date().toISOString()
-        }])
-        .select();
+        }]);
 
       if (inquiryError) throw inquiryError;
 
@@ -152,4 +151,4 @@ export function Contact() {
       </div>
     </section>
   );
-                        }
+      }
