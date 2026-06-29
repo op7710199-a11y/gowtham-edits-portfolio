@@ -13,11 +13,12 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
   const { logoUrl } = useLogo();
   const [imgFailed, setImgFailed] = useState(false);
 
+  // showImage uses the stable logoUrl without cache-busting strings
   const showImage = !textOnly && logoUrl && !imgFailed;
   
   const inner = showImage ? (
     <ImageLogo 
-      src={logoUrl} // Stable URL without cache-busting
+      src={logoUrl} 
       height={height} 
       compact={compact} 
       onFail={() => setImgFailed(true)} 
@@ -26,7 +27,7 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
     <TextLogo compact={compact} height={height} />
   );
 
-  // Changed to flex-none to ensure the logo never shrinks
+  // Added flex-none to ensure the logo never shrinks
   const base = `inline-flex items-center flex-none ${className}`;
 
   if (href) {
@@ -40,6 +41,11 @@ export function Logo({ height = 48, className = '', compact = false, textOnly = 
 }
 
 function ImageLogo({ src, height, compact, onFail }: { src: string; height: number; compact: boolean; onFail: () => void }) {
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    console.error("Logo load failed:", e.currentTarget.src);
+    onFail();
+  };
+
   if (compact) {
     return (
       <img 
@@ -50,7 +56,7 @@ function ImageLogo({ src, height, compact, onFail }: { src: string; height: numb
         className="rounded-xl object-contain" 
         style={{ height, width: height }} 
         draggable={false} 
-        onError={onFail} 
+        onError={handleImageError} 
       />
     );
   }
@@ -68,7 +74,7 @@ function ImageLogo({ src, height, compact, onFail }: { src: string; height: numb
       }}
       className="object-contain" 
       draggable={false} 
-      onError={onFail} 
+      onError={handleImageError} 
     />
   );
 }
