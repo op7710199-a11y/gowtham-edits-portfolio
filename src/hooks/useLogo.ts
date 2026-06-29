@@ -8,10 +8,10 @@ export function useLogo() {
   const { data: logoUrl = '', isLoading: loading } = useQuery({
     queryKey: queryKeys.logo,
     queryFn: () => siteSettingsService.getLogoUrl(),
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60,
     retry: 2,
-    refetchOnMount: 'always',
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 
