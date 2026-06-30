@@ -11,16 +11,23 @@ interface LogoProps {
 
 export function Logo({ height = 48, className = '', compact = false, textOnly = false, href }: LogoProps) {
   const { logoUrl } = useLogo();
+  
+  // Debugging log as requested
+  console.log("Logo URL:", logoUrl);
+
   const [imgFailed, setImgFailed] = useState(false);
   const [retry, setRetry] = useState(0);
 
-  // Validate that it's a real URL
-  const validLogo = typeof logoUrl === 'string' && logoUrl.startsWith('https://');
-  const showImage = !textOnly && validLogo && !imgFailed;
+  // Clean the URL (remove potential surrounding quotes/whitespace)
+  const cleanLogo = typeof logoUrl === "string" 
+    ? logoUrl.trim().replace(/^"|"$/g, "") 
+    : "";
+
+  const showImage = !textOnly && cleanLogo.length > 0 && !imgFailed;
   
   const inner = showImage ? (
     <ImageLogo 
-      src={logoUrl} 
+      src={cleanLogo} 
       retry={retry}
       height={height} 
       compact={compact} 
@@ -50,7 +57,7 @@ function ImageLogo({ src, retry, height, onFail, onRetry }: any) {
 
   return (
     <img 
-      src={retry ? `${src}?retry=${retry}` : src} 
+      src={retry ? `${src}${src.includes('?') ? '&' : '?'}retry=${retry}` : src} 
       alt="GOWTHAM EDITS" 
       loading="eager"
       decoding="async"
