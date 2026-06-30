@@ -1,21 +1,59 @@
 import { useState } from 'react';
-import { MessageCircle, Mail, MapPin, CheckCircle2, Clock } from 'lucide-react';
-import { SectionHeading } from '../Reveal';
+import { MessageCircle, Mail, MapPin, Clock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export function Contact() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
-  const [form, setForm] = useState({ name: '', email: '', phone: '', service: '', budget: '', deadline: '', message: '' });
+  const [form, setForm] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    service: '', 
+    budget: '', 
+    deadline: '', 
+    message: '' 
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
-    
-    await supabase.from("inquiries").insert([{
-      ...form, status: 'new', source: 'website', created_at: new Date().toISOString()
-    }]);
 
-    setStatus('success');
+    try {
+      const { error } = await supabase
+        .from("inquiries")
+        .insert([
+          {
+            name: form.name,
+            email: form.email,
+            phone: form.phone,
+            service: form.service,
+            message: form.message,
+            budget_range: form.budget,
+            delivery_deadline: form.deadline,
+            status: "New",
+            source: "Website",
+            created_at: new Date().toISOString()
+          },
+        ]);
+
+      if (error) throw error;
+
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        service: "",
+        budget: "",
+        deadline: "",
+        message: "",
+      });
+
+      setStatus("success");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to send inquiry. Please try again.");
+      setStatus("idle");
+    }
   };
 
   return (
@@ -60,15 +98,18 @@ export function Contact() {
             </div>
 
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 bg-white/[0.02] p-8 rounded-3xl border border-white/5">
-              <input required className="col-span-2 bg-black/50 border border-white/10 p-4 rounded-xl focus:border-gold-500 outline-none transition" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} />
-              <input required className="bg-black/50 border border-white/10 p-4 rounded-xl focus:border-gold-500 outline-none transition" placeholder="Email" onChange={e => setForm({...form, email: e.target.value})} />
-              <input className="bg-black/50 border border-white/10 p-4 rounded-xl focus:border-gold-500 outline-none transition" placeholder="Phone" onChange={e => setForm({...form, phone: e.target.value})} />
-              <select className="col-span-2 bg-black/50 border border-white/10 p-4 rounded-xl text-stone-400" onChange={e => setForm({...form, service: e.target.value})}>
-                <option>Select Service</option>
-                <option>Wedding Film</option>
-                <option>Reels Editing</option>
+              <input required value={form.name} className="col-span-2 bg-black/50 border border-white/10 p-4 rounded-xl focus:border-gold-500 outline-none transition" placeholder="Full Name" onChange={e => setForm({...form, name: e.target.value})} />
+              <input required value={form.email} className="bg-black/50 border border-white/10 p-4 rounded-xl focus:border-gold-500 outline-none transition" placeholder="Email" onChange={e => setForm({...form, email: e.target.value})} />
+              <input value={form.phone} className="bg-black/50 border border-white/10 p-4 rounded-xl focus:border-gold-500 outline-none transition" placeholder="Phone" onChange={e => setForm({...form, phone: e.target.value})} />
+              
+              <select value={form.service} className="col-span-2 bg-black/50 border border-white/10 p-4 rounded-xl text-stone-400" onChange={e => setForm({...form, service: e.target.value})}>
+                <option value="">Select Service</option>
+                <option value="Wedding Film">Wedding Film</option>
+                <option value="Reels Editing">Reels Editing</option>
               </select>
-              <textarea required className="col-span-2 bg-black/50 border border-white/10 p-4 rounded-xl h-32 focus:border-gold-500 outline-none transition" placeholder="Project Details" onChange={e => setForm({...form, message: e.target.value})} />
+
+              <textarea required value={form.message} className="col-span-2 bg-black/50 border border-white/10 p-4 rounded-xl h-32 focus:border-gold-500 outline-none transition" placeholder="Project Details" onChange={e => setForm({...form, message: e.target.value})} />
+              
               <button disabled={status === 'submitting'} className="col-span-2 bg-gold-gradient py-5 font-bold text-black rounded-xl hover:scale-[1.01] transition-transform shadow-lg shadow-gold-500/10">
                 {status === 'submitting' ? 'Sending...' : 'Get Free Quote'}
               </button>
