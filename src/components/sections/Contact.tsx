@@ -36,7 +36,11 @@ export function Contact() {
           },
         ]);
 
-      if (error) throw error;
+      if (error) {
+        console.log(error);
+        alert(JSON.stringify(error, null, 2));
+        throw error;
+      }
 
       setForm({
         name: "",
@@ -50,8 +54,7 @@ export function Contact() {
 
       setStatus("success");
     } catch (error) {
-      console.error(error);
-      alert("Failed to send inquiry. Please try again.");
+      console.error("Submission error:", error);
       setStatus("idle");
     }
   };
