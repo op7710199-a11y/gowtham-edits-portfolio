@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -19,7 +20,6 @@ import { HeroSettingsPage } from './pages/admin/HeroSettings';
 import { AboutManager } from './pages/admin/AboutManager';
 import { LogoManager } from './pages/admin/LogoManager';
 
-import { useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { FloatingWhatsApp, MobileCTABar, BackToTop } from './components/FloatingActions';
 import { SectionErrorBoundary } from './components/SectionErrorBoundary';
@@ -43,13 +43,21 @@ import { useServices, usePricing, usePortfolio, useTestimonials, useFAQs } from 
 
 function PublicSite() {
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
+  
   const servicesQ = useServices();
   const pricingQ = usePricing();
   const portfolioQ = usePortfolio();
   const testimonialsQ = useTestimonials();
   const faqsQ = useFAQs();
 
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitializing(false), 2200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const stillLoading =
+    isInitializing ||
     (servicesQ.isLoading && !servicesQ.data) ||
     (pricingQ.isLoading && !pricingQ.data) ||
     (portfolioQ.isLoading && !portfolioQ.data);
@@ -60,66 +68,20 @@ function PublicSite() {
     <div className="relative min-h-screen bg-ink-950 text-stone-200">
       <Navbar />
       <main>
-        <SectionErrorBoundary name="Hero">
-          <Hero />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="ServicesPreview">
-          <ServicesPreview services={servicesQ.data ?? []} />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="FeaturedProjects">
-          <FeaturedProjects portfolio={portfolioQ.data ?? []} onOpenProject={setActiveProjectId} />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="WhyChoose">
-          <WhyChoose />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="About">
-          <About />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="Portfolio">
-          <Portfolio
-            portfolio={portfolioQ.data ?? []}
-            externalActiveId={activeProjectId}
-            onActiveIdChange={setActiveProjectId}
-          />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="Services">
-          <Services services={servicesQ.data ?? []} />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="Pricing">
-          <Pricing pricing={pricingQ.data ?? []} />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="Process">
-          <ProcessSection />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="AITools">
-          <AITools />
-        </SectionErrorBoundary>
-
-        <InquiryCTA
-          heading="Your project deserves a cinematic edit."
-          subtext="Whether it's a wedding film, a viral reel, or a bike cinematic — let's build something that lasts."
-        />
-
-        <SectionErrorBoundary name="Testimonials">
-          <TestimonialsSection testimonials={testimonialsQ.data ?? []} />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="FAQ">
-          <FAQ faqs={faqsQ.data ?? []} />
-        </SectionErrorBoundary>
-
-        <SectionErrorBoundary name="Contact">
-          <Contact />
-        </SectionErrorBoundary>
+        <SectionErrorBoundary name="Hero"><Hero /></SectionErrorBoundary>
+        <SectionErrorBoundary name="ServicesPreview"><ServicesPreview services={servicesQ.data ?? []} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="FeaturedProjects"><FeaturedProjects portfolio={portfolioQ.data ?? []} onOpenProject={setActiveProjectId} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="WhyChoose"><WhyChoose /></SectionErrorBoundary>
+        <SectionErrorBoundary name="About"><About /></SectionErrorBoundary>
+        <SectionErrorBoundary name="Portfolio"><Portfolio portfolio={portfolioQ.data ?? []} externalActiveId={activeProjectId} onActiveIdChange={setActiveProjectId} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="Services"><Services services={servicesQ.data ?? []} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="Pricing"><Pricing pricing={pricingQ.data ?? []} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="Process"><ProcessSection /></SectionErrorBoundary>
+        <SectionErrorBoundary name="AITools"><AITools /></SectionErrorBoundary>
+        <InquiryCTA heading="Your project deserves a cinematic edit." subtext="Whether it's a wedding film, a viral reel, or a bike cinematic — let's build something that lasts." />
+        <SectionErrorBoundary name="Testimonials"><TestimonialsSection testimonials={testimonialsQ.data ?? []} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="FAQ"><FAQ faqs={faqsQ.data ?? []} /></SectionErrorBoundary>
+        <SectionErrorBoundary name="Contact"><Contact /></SectionErrorBoundary>
       </main>
       <Footer />
       <FloatingWhatsApp />
@@ -146,15 +108,7 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route path="/admin/login" element={<Login />} />
-
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute roles={['super_admin', 'admin', 'editor']}>
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
+            <Route path="/admin" element={<ProtectedRoute roles={['super_admin', 'admin', 'editor']}><AdminLayout /></ProtectedRoute>}>
               <Route index element={<Dashboard />} />
               <Route path="portfolio" element={<PortfolioManager />} />
               <Route path="hero" element={<ProtectedRoute roles={['super_admin', 'admin']}><HeroSettingsPage /></ProtectedRoute>} />
@@ -171,7 +125,6 @@ export default function App() {
               <Route path="activity" element={<ProtectedRoute roles={['super_admin', 'admin']}><ActivityLogs /></ProtectedRoute>} />
               <Route path="*" element={<Navigate to="/admin" replace />} />
             </Route>
-
             <Route path="/*" element={<PublicSite />} />
           </Routes>
         </AuthProvider>
