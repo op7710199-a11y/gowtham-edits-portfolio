@@ -61,7 +61,8 @@ export function Navbar() {
   const close = () => setOpen(false);
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? 'py-3' : 'py-5'}`}>
+    // Increased base padding for better hero section breathing room
+    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-700 ${scrolled ? 'pt-6 pb-3' : 'pt-10 pb-5'}`}>
       <nav 
         className={`container-mx flex items-center justify-between rounded-full border transition-all duration-700 ${
           scrolled
@@ -70,8 +71,9 @@ export function Navbar() {
         }`}
         aria-label="Main Navigation"
       >
-        <div className="w-[145px] sm:w-[170px] shrink-0">
-          <Logo href="#home" height={45} />
+        {/* Increased logo container width and Logo height for brand visibility */}
+        <div className="w-[185px] sm:w-[220px] shrink-0">
+          <Logo href="#home" height={58} />
         </div>
 
         <ul className="hidden items-center gap-0.5 lg:flex">
@@ -106,6 +108,7 @@ export function Navbar() {
         </div>
       </nav>
 
+      {/* Mobile Menu adjusted to handle the new navbar spacing */}
       <div 
         id="mobile-menu"
         aria-hidden={!open}
