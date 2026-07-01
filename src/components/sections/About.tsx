@@ -9,7 +9,7 @@ export function About() {
   if (isError) return null;
 
   const safeAbout = about ?? { name: "Gowtham", title: "FILM EDITOR", bio: "Cinematic editor specializing in wedding films and reels.", skills: ['Premiere Pro', 'DaVinci Resolve'], instagram_url: '#', whatsapp_url: '#' };
-  const stats = [{ label: '100+ Projects' }, { label: '5+ Years Exp' }, { label: 'Fast Delivery' }];
+  const stats = [{ label: '25+ Projects' }, { label: '2+ Years Exp' }, { label: 'Fast Delivery' }];
 
   return (
     <section id="about" className="section-padding relative overflow-hidden">
