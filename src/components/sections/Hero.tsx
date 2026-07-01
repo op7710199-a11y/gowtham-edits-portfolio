@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
 import { Play, CheckCircle2 } from 'lucide-react';
 import { useCountUp } from '../../hooks';
-import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
+import { useHeroSettings } from '../../hooks/useSupabaseQueries';
 import { Logo } from '../Logo';
 
 function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
@@ -25,16 +24,20 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative isolate min-h-[100svh] flex flex-col justify-center overflow-hidden pt-32 pb-20 bg-cover bg-center bg-no-repeat"
+      className="relative isolate min-h-[100svh] flex flex-col justify-center overflow-hidden pt-32 pb-20 bg-cover bg-no-repeat"
       style={{
-        backgroundImage: "linear-gradient(rgba(4,8,20,0.78), rgba(4,8,20,0.92)), url('/hero-bg.png')",
+        backgroundImage: "linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url('/hero-bg.png')",
+        backgroundPosition: "80% center",
       }}
     >
+      {/* Premium Blur Layer */}
+      <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none" />
+
       {/* Decorative Depth Gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.15),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(234,179,8,0.12),transparent_45%)] pointer-events-none" />
 
       <div className="container-mx grid items-center gap-16 lg:grid-cols-2">
-        <div className="max-w-2xl">
+        <div className="max-w-2xl relative z-10">
           <Logo height={70} className="mb-8" />
           
           <h1 className="font-display text-5xl md:text-7xl lg:text-[5rem] leading-[0.9] font-bold text-white">
@@ -75,7 +78,7 @@ export function Hero() {
       </div>
 
       {/* Scroll Indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-stone-500 text-xs uppercase tracking-widest flex flex-col items-center gap-2">
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-stone-500 text-xs uppercase tracking-widest flex flex-col items-center gap-2 z-10">
         Scroll to Explore ↓
       </div>
     </section>
