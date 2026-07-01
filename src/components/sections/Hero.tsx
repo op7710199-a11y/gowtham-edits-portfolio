@@ -3,15 +3,27 @@ import { useCountUp } from '../../hooks';
 import { useHeroSettings } from '../../hooks/useSupabaseQueries';
 import { Logo } from '../Logo';
 
-function StatCounter({ value, label, suffix }: { value: number; label: string; suffix: string }) {
+function StatCounter({
+  value,
+  label,
+  suffix,
+}: {
+  value: number;
+  label: string;
+  suffix: string;
+}) {
   const { ref, value: v } = useCountUp(value, 2000);
+
   return (
     <div className="text-center px-3">
       <div className="font-display text-3xl font-bold text-white sm:text-4xl">
         <span ref={ref}>{v}</span>
         <span className="text-gradient-gold">{suffix}</span>
       </div>
-      <div className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-stone-400">{label}</div>
+
+      <div className="mt-1 text-[10px] font-semibold uppercase tracking-widest text-stone-400">
+        {label}
+      </div>
     </div>
   );
 }
@@ -24,63 +36,127 @@ export function Hero() {
   return (
     <section
       id="home"
-      className="relative isolate min-h-[100svh] flex flex-col justify-center overflow-hidden pt-32 pb-20 bg-cover bg-no-repeat"
+      className="relative isolate min-h-[100svh] flex flex-col justify-center overflow-hidden pt-32 pb-20"
       style={{
-        backgroundImage: "linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)), url('/hero-bg.png')",
-        backgroundPosition: "80% center",
+        backgroundImage:
+          "linear-gradient(90deg, rgba(5,8,20,0.70) 0%, rgba(5,8,20,0.50) 40%, rgba(5,8,20,0.25) 100%), url('/hero-bg.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center center",
+        backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Premium Blur Layer */}
-      <div className="absolute inset-0 backdrop-blur-[1px] pointer-events-none" />
+      {/* Blue Glow */}
+      <div className="absolute top-0 left-0 h-[500px] w-[500px] rounded-full bg-blue-500/20 blur-[180px] animate-pulse" />
 
-      {/* Decorative Depth Gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.15),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(234,179,8,0.12),transparent_45%)] pointer-events-none" />
+      {/* Gold Glow */}
+      <div className="absolute bottom-0 right-0 h-[450px] w-[450px] rounded-full bg-yellow-400/15 blur-[180px] animate-pulse" />
 
-      <div className="container-mx grid items-center gap-16 lg:grid-cols-2">
-        <div className="max-w-2xl relative z-10">
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black/20 backdrop-blur-[1px]" />
+
+      {/* Grid */}
+      <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(rgba(255,255,255,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] bg-[size:60px_60px]" />
+
+      <div className="relative z-10 container-mx grid items-center gap-16 lg:grid-cols-2">
+        <div className="max-w-2xl">
+
           <Logo height={70} className="mb-8" />
-          
+
           <h1 className="font-display text-5xl md:text-7xl lg:text-[5rem] leading-[0.9] font-bold text-white">
-            Crafting Cinematic <span className="text-gradient-gold relative">Stories</span>
+            Crafting
+            <br />
+            Cinematic
+            <br />
+            <span className="text-gradient-gold">
+              Stories
+            </span>
           </h1>
 
-          <p className="mt-8 text-lg md:text-xl leading-relaxed text-stone-300">
-            Professional video editing that transforms your footage into unforgettable visual experiences.
+          <p className="mt-8 text-lg md:text-xl leading-relaxed text-stone-300 max-w-xl">
+            Professional video editing that transforms your footage into unforgettable cinematic experiences with premium storytelling.
           </p>
 
-          {/* Trust Badges */}
+          {/* Badges */}
+
           <div className="mt-8 flex flex-wrap gap-4">
-            {['100+ Projects Delivered', '5+ Years Experience', 'Fast Delivery'].map((text) => (
-              <div key={text} className="flex items-center gap-1.5 text-xs font-medium text-gold-400 bg-gold-500/10 px-3 py-1 rounded-full border border-gold-500/20">
-                <CheckCircle2 className="h-3.5 w-3.5" /> {text}
+
+            {[
+              "100+ Projects Delivered",
+              "5+ Years Experience",
+              "Fast Delivery",
+            ].map((item) => (
+              <div
+                key={item}
+                className="flex items-center gap-2 rounded-full border border-yellow-500/20 bg-yellow-500/10 px-4 py-2 text-xs text-yellow-300 backdrop-blur-md"
+              >
+                <CheckCircle2 size={14} />
+                {item}
               </div>
             ))}
+
           </div>
 
-          {/* Dual CTAs */}
-          <div className="mt-10 flex flex-wrap gap-4">
-            <a href="#contact" className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-gold-gradient px-8 py-4 text-black font-bold rounded-full hover:shadow-[0_0_20px_rgba(198,146,33,0.4)] transition-all">
+          {/* Buttons */}
+
+          <div className="mt-10 flex flex-wrap gap-5">
+
+            <a
+              href="#contact"
+              className="rounded-full bg-gold-gradient px-10 py-4 font-bold text-black shadow-[0_0_40px_rgba(234,179,8,.35)] transition hover:scale-105"
+            >
               Get Free Quote
             </a>
-            <a href="#portfolio" className="flex-1 sm:flex-none flex items-center justify-center gap-2 border border-white/10 px-8 py-4 text-white font-semibold rounded-full hover:bg-white/5 transition-all">
-              <Play className="h-4 w-4 fill-white" /> Watch Showreel
+
+            <a
+              href="#portfolio"
+              className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-10 py-4 font-semibold text-white backdrop-blur-md transition hover:bg-white/10"
+            >
+              <Play className="fill-white" size={18} />
+              Watch Showreel
             </a>
+
           </div>
 
-          {/* Stats Counters */}
-          <div className="mt-12 grid grid-cols-4 gap-4 border-t border-white/10 pt-8">
-            <StatCounter value={100} label="Projects" suffix="+" />
-            <StatCounter value={50} label="Happy Clients" suffix="+" />
-            <StatCounter value={5} label="Years" suffix="+" />
-            <StatCounter value={24} label="Fast Delivery" suffix="h" />
+          {/* Stats */}
+
+          <div className="mt-16 grid grid-cols-4 gap-4 border-t border-white/10 pt-8">
+
+            <StatCounter
+              value={100}
+              label="Projects"
+              suffix="+"
+            />
+
+            <StatCounter
+              value={50}
+              label="Happy Clients"
+              suffix="+"
+            />
+
+            <StatCounter
+              value={5}
+              label="Years"
+              suffix="+"
+            />
+
+            <StatCounter
+              value={24}
+              label="Fast Delivery"
+              suffix="h"
+            />
+
           </div>
+
         </div>
+
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce text-stone-500 text-xs uppercase tracking-widest flex flex-col items-center gap-2 z-10">
-        Scroll to Explore ↓
+      {/* Scroll */}
+
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-white/60 text-xs uppercase tracking-[0.35em]">
+        Scroll
       </div>
+
     </section>
   );
 }
