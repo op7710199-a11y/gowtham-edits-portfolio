@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { ChevronRight, Play, MessageCircle, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { Play, CheckCircle2 } from 'lucide-react';
 import { useCountUp } from '../../hooks';
 import { useHeroSettings, useSiteSettings } from '../../hooks/useSupabaseQueries';
 import { Logo } from '../Logo';
@@ -18,20 +18,21 @@ function StatCounter({ value, label, suffix }: { value: number; label: string; s
 }
 
 export function Hero() {
-  const { hero, stats, loading: heroLoading } = useHeroSettings();
-  const { data: settings } = useSiteSettings();
-  const [revealed, setRevealed] = useState(false);
-  const whatsappNum = settings?.whatsapp_number?.toString().replace(/\D/g, "") ?? "919676831437";
-
-  useEffect(() => {
-    const t = setTimeout(() => setRevealed(true), 100);
-    return () => clearTimeout(t);
-  }, []);
+  const { loading: heroLoading } = useHeroSettings();
 
   if (heroLoading) return null;
 
   return (
-    <section id="home" className="relative isolate min-h-[100svh] flex flex-col justify-center overflow-hidden pt-32 pb-20">
+    <section
+      id="home"
+      className="relative isolate min-h-[100svh] flex flex-col justify-center overflow-hidden pt-32 pb-20 bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "linear-gradient(rgba(4,8,20,0.78), rgba(4,8,20,0.92)), url('/hero-bg.png')",
+      }}
+    >
+      {/* Decorative Depth Gradients */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.15),transparent_45%),radial-gradient(circle_at_bottom_right,rgba(234,179,8,0.12),transparent_45%)] pointer-events-none" />
+
       <div className="container-mx grid items-center gap-16 lg:grid-cols-2">
         <div className="max-w-2xl">
           <Logo height={70} className="mb-8" />
@@ -69,17 +70,6 @@ export function Hero() {
             <StatCounter value={50} label="Happy Clients" suffix="+" />
             <StatCounter value={5} label="Years" suffix="+" />
             <StatCounter value={24} label="Fast Delivery" suffix="h" />
-          </div>
-        </div>
-
-        {/* Hero Image with Floating Animation */}
-        <div className="relative hidden lg:flex justify-center">
-          <div className="hero-image animate-[float_6s_ease-in-out_infinite]">
-            <img
-              src={hero?.bg_image_url || "https://images.pexels.com/photos/3014019/pexels-photo-3014019.jpeg"}
-              alt="Hero"
-              className="h-[500px] w-[350px] object-cover rounded-[32px] border border-gold-500/20 shadow-2xl"
-            />
           </div>
         </div>
       </div>
