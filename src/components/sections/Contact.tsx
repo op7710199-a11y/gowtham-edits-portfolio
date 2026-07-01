@@ -66,7 +66,7 @@ export function Contact() {
         <div className="text-center mb-20 animate-in fade-in duration-1000">
           <p className="text-gold-400 font-bold uppercase tracking-[0.2em] mb-8">Trusted by creators, brands and couples</p>
           <div className="grid grid-cols-3 max-w-2xl mx-auto gap-8">
-            {[ { n: '100+', l: 'Projects' }, { n: '50+', l: 'Happy Clients' }, { n: '98%', l: 'Satisfaction' } ].map(s => (
+            {[ { n: '25+', l: 'Projects' }, { n: '20+', l: 'Happy Clients' }, { n: '98%', l: 'Satisfaction' } ].map(s => (
               <div key={s.l} className="p-4 border border-white/5 rounded-2xl bg-white/5">
                 <div className="text-3xl font-bold text-white mb-1">{s.n}</div>
                 <div className="text-[10px] text-stone-500 uppercase tracking-widest">{s.l}</div>
