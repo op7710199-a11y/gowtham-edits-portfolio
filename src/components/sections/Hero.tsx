@@ -122,27 +122,21 @@ export function Hero() {
           <div className="mt-16 grid grid-cols-4 gap-4 border-t border-white/10 pt-8">
 
             <StatCounter
-              value={100}
+              value={25}
               label="Projects"
               suffix="+"
             />
 
             <StatCounter
-              value={50}
+              value={20}
               label="Happy Clients"
               suffix="+"
             />
 
             <StatCounter
-              value={5}
+              value={2}
               label="Years"
               suffix="+"
-            />
-
-            <StatCounter
-              value={24}
-              label="Fast Delivery"
-              suffix="h"
             />
 
           </div>
