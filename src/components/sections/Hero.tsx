@@ -81,8 +81,8 @@ export function Hero() {
           <div className="mt-8 flex flex-wrap gap-4">
 
             {[
-              "100+ Projects Delivered",
-              "5+ Years Experience",
+              "25+ Projects Delivered",
+              "2+ Years Experience",
               "Fast Delivery",
             ].map((item) => (
               <div
